@@ -1,29 +1,35 @@
-class OitoDamas : ProcuraConstrutiva {
+class OitoDamas : ProcuraConstrutiva, ICloneable {
 
-	private List<int> damas = new List<int>();
+	public List<int> damas {get ; private set; }
 
+    public OitoDamas(){
+        damas = new List<int>();
+    }
+    
+    public OitoDamas(List<int> a){
+        damas = a;
+    }
+    ~OitoDamas(){}
     public void TesteOitoDamas(){
         Console.WriteLine("OITO DAMAS");
         Teste();
     }
 
-    ProcuraConstrutiva Duplicar()
+    public object Clone()
     {
-        OitoDamas clone=new OitoDamas();
-        clone.damas=damas;
-        return clone;
+        return new OitoDamas(damas);
     }
 
     public override List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores){
-        int novaLinha=damas.Count();
 
+        int novaLinha=damas.Count();
         for(int i=0;i<8;i++) {
             int j=0;
             for(;j<novaLinha;j++)
                 if(i==damas[j] || i==damas[j]+(novaLinha-j) || i==damas[j]-(novaLinha-j))
                     break;
             if(j==novaLinha) {
-                OitoDamas sucessor=(OitoDamas)Duplicar();
+                OitoDamas sucessor = ObjectExtensions.Copy(this);
                 sucessor.damas.Add(i);
                 sucessores.Add(sucessor);
             }
@@ -34,7 +40,9 @@ class OitoDamas : ProcuraConstrutiva {
         return sucessores;
     }
 	public override void SolucaoVazia() { damas.Clear(); }
-	public override bool SolucaoCompleta() { return damas.Count()==8; }
+	public override bool SolucaoCompleta() { 
+        return damas.Count()==8; 
+    }
 
     public override void Debug()
     {

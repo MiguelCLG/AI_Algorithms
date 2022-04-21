@@ -26,8 +26,7 @@ class ProcuraConstrutiva {
         }
         return -1;
     }
-    public virtual void SolucaoVazia() {}
-	public virtual bool SolucaoCompleta() { return false; }    
+
     public void Expand(List<ProcuraConstrutiva> sucessores){
         geracoes++;
         expansoes += sucessores.Count();
@@ -36,6 +35,8 @@ class ProcuraConstrutiva {
         return sucessores;
     }
 
+    public virtual void SolucaoVazia() {}
+	public virtual bool SolucaoCompleta() { return false; }    
     virtual public void Debug(){}
     public void Teste(){
         SolucaoVazia();
