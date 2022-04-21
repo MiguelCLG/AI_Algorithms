@@ -8,6 +8,7 @@ namespace AiAlgoritmos
         static void Main(string[] args)
         {
             teste.TesteOitoDamas();
+            Console.ReadKey();
         }
     }
 }

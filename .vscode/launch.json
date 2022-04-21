@@ -12,7 +12,7 @@
             "program": "${workspaceFolder}/bin/Debug/net6.0/algoritmos_c_sharp.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
-            "console": "internalConsole",
+            "console": "externalTerminal",
             "stopAtEntry": false,
             "externalConsole": true,
         },

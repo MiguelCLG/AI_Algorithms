@@ -1,8 +1,8 @@
 using System;
 
 class ProcuraConstrutiva {
-    public int expansoes = 0;
-    public int geracoes = 0;
+    public static int expansoes = 0;
+    public static int geracoes = 0;
     public List<ProcuraConstrutiva> queue = new List<ProcuraConstrutiva>();
     public List<ProcuraConstrutiva> results = new List<ProcuraConstrutiva>();
     public int LarguraPrimeiro()
@@ -13,15 +13,17 @@ class ProcuraConstrutiva {
             {
                 queue.Last().Debug();
                 Console.WriteLine("expansoes: {0} geracoes: {1}", expansoes, geracoes);
-                return queue.Count();
+                return results.Count();
             }
             else
             {
                 List<ProcuraConstrutiva> sucessores = new List<ProcuraConstrutiva>();
 
                 sucessores = queue[i].Sucessores(sucessores);
+
                 queue[i].Debug();
                 queue.AddRange(sucessores);
+                results.Add(queue[i]);
             }
         }
         return -1;
