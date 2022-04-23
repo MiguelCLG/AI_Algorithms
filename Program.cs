@@ -4,10 +4,11 @@ namespace AiAlgoritmos
 {
     class Program
     {
-        private static OitoDamas teste = new OitoDamas();
+        private static OitoDamas oitoDamas = new OitoDamas();
         static void Main(string[] args)
         {
-            teste.TesteOitoDamas();
+
+            oitoDamas.Teste();
             Console.ReadKey();
         }
     }

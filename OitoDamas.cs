@@ -1,3 +1,9 @@
+/*
+    Author: Miguel Gonçalves
+    Class: Oito Damas
+    Description: Solves the 8 Queens problem
+    Notes: ICloneable is a derivative class that allows us to make a deep copy of an object 
+*/
 class OitoDamas : ProcuraConstrutiva, ICloneable {
 
 	public List<int> damas {get ; private set; }
@@ -29,9 +35,10 @@ class OitoDamas : ProcuraConstrutiva, ICloneable {
                 if(i==damas[j] || i==damas[j]+(novaLinha-j) || i==damas[j]-(novaLinha-j))
                     break;
             if(j==novaLinha) {
-                OitoDamas sucessor = ObjectExtensions.Copy(this);
+                OitoDamas sucessor = ObjectExtensions.Copy(this); // Object Extensions is an extension class to the System namespace that will allow us to instanciate a new object from itself
                 sucessor.damas.Add(i);
                 sucessores.Add(sucessor);
+                AddResult(damas.Count());
             }
         }
 
