@@ -14,18 +14,20 @@ class ProcuraConstrutiva {
     public static int expansoes = 0;
     public static int geracoes = 0;
     public static List<int> results = new List<int>();
+    private int cost = 0;
     public List<ProcuraConstrutiva> visitados = new List<ProcuraConstrutiva>();
 
     //Em termos de definição, o BFS usa uma fila (queue) para correr o algoritmos, uma lista é tecnicamente a mesma coisa e mais simples de usar
-    public List<ProcuraConstrutiva> queue = new List<ProcuraConstrutiva>();
+    public Queue<ProcuraConstrutiva> queue = new Queue<ProcuraConstrutiva>();
+    public PriorityQueue<ProcuraConstrutiva, int> priorityQueue = new PriorityQueue<ProcuraConstrutiva, int>();
 
     // Em termos de definição, o DFS usa uma pilha (stack) para correr o seu algoritmo de recursão. Como Stack tem uma função de Pop (retira o ultimo elemento da pilha), usamos este em vez de lista
     public Stack<ProcuraConstrutiva> stack = new Stack<ProcuraConstrutiva>();
     public int LarguraPrimeiro()
     {
-        queue.Add(this);
+        queue.Enqueue(this);
         for (int i = 0; i< queue.Count(); i++) {
-            if(queue[i].SolucaoCompleta())
+            if(queue.ElementAt(i).SolucaoCompleta())
             {
                 queue.Last().Debug();
                 Console.WriteLine("expansoes: {0} geracoes: {1}", expansoes, geracoes);
@@ -35,10 +37,13 @@ class ProcuraConstrutiva {
             {
                 List<ProcuraConstrutiva> sucessores = new List<ProcuraConstrutiva>();
 
-                sucessores = queue[i].Sucessores(sucessores);
+                sucessores = queue.ElementAt(i).Sucessores(sucessores, cost);
 
-                queue[i].Debug();
-                queue.AddRange(sucessores);
+                //queue.ElementAt(i).Debug();
+                foreach (ProcuraConstrutiva sucessor in sucessores)
+                {
+                    queue.Enqueue(sucessor);                
+                }
             }
         }
         return -1;
@@ -63,7 +68,7 @@ class ProcuraConstrutiva {
                 if(!visitados.Contains(currentNode))
                 {
                     List<ProcuraConstrutiva> nodes = new List<ProcuraConstrutiva>();
-                    nodes = currentNode.Sucessores(nodes);
+                    nodes = currentNode.Sucessores(nodes, cost);
                     visitados.Add(currentNode);
                     foreach (ProcuraConstrutiva sucessor in nodes)
                     {
@@ -77,6 +82,37 @@ class ProcuraConstrutiva {
         }
         return -1; // nao encontrou solução
     }
+    
+    public int CustoUniforme(PriorityQueue<ProcuraConstrutiva, int> priorityQueue, List<ProcuraConstrutiva> visitados)
+    {
+        priorityQueue.Enqueue(this, 0);
+        while (priorityQueue.Count > 0) {
+            ProcuraConstrutiva currentElement = priorityQueue.Dequeue();
+            if(currentElement.SolucaoCompleta())
+            {
+                currentElement.Debug();
+                Console.WriteLine("Expansoes: {0} Geracoes: {1}", expansoes, geracoes);
+                return results.Last();
+            }
+            else
+            {
+                List<ProcuraConstrutiva> sucessores = new List<ProcuraConstrutiva>();
+
+                sucessores = currentElement.Sucessores(sucessores, geracoes);
+
+                foreach (ProcuraConstrutiva sucessor in sucessores)
+                {
+                    priorityQueue.Enqueue(sucessor, sucessor.cost);
+                }
+            }
+        }
+        return -1;
+    }
+
+    public void SetCost(int custo)
+    {
+        cost = custo;
+    }
     public void Expand(List<ProcuraConstrutiva> sucessores){
         geracoes++;
         expansoes += sucessores.Count();
@@ -86,7 +122,7 @@ class ProcuraConstrutiva {
         results.Add(value);
     }
 
-    virtual public List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores) {
+    virtual public List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores, int custo) {
         return sucessores;
     }
 
@@ -98,6 +134,7 @@ class ProcuraConstrutiva {
         stack.Clear();
         queue.Clear();
         stack.Push(this);
+        priorityQueue.Clear();
         visitados.Clear();
         expansoes = 0;
         geracoes = 0;
@@ -127,6 +164,7 @@ class ProcuraConstrutiva {
                     Console.WriteLine("Profundidade Primeiro: " + ProfundidadePrimeiro(stack, visitados).ToString());
                     break;
                 case "3": 
+                    Console.WriteLine("Custo Uniforme: " + CustoUniforme(priorityQueue, visitados).ToString());
                     break;
                 case "0": 
                     System.Environment.Exit(0);
