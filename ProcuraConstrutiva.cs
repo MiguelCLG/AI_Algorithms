@@ -8,6 +8,8 @@
     Notes: * has no implementation yet
 */
 
+//TODO: Results array not returning number of queens
+
 using System;
 
 class ProcuraConstrutiva {
@@ -147,7 +149,7 @@ class ProcuraConstrutiva {
             Console.WriteLine("---------------------------------------------------------------------------------------------");
             Console.WriteLine("------------------------------Algoritmos Inteligencia Artificial-----------------------------");
             Console.WriteLine("---------------------------------------------------------------------------------------------");
-            Console.WriteLine("[1] - Largura Primeiro | [2] - Profundidade Primeiro | [3] - Custo Uniforme* [Procuras Cegas]");
+            Console.WriteLine("[1] - Largura Primeiro | [2] - Profundidade Primeiro | [3] - Custo Uniforme  [Procuras Cegas]");
             Console.WriteLine("[0] - Sair                                                                          [Sistema]");
             Console.WriteLine("---------------------------------------  Estatísticas  --------------------------------------");
             Console.WriteLine("Expansoes: {0}                Geracoes: {1}", expansoes, geracoes);
