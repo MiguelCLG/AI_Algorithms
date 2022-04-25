@@ -13,18 +13,23 @@
 using System;
 
 class ProcuraConstrutiva {
+#region Estrutura de dados
     public static int expansoes = 0;
     public static int geracoes = 0;
     public static List<int> results = new List<int>();
     private int cost = 0;
     public List<ProcuraConstrutiva> visitados = new List<ProcuraConstrutiva>();
 
-    //Em termos de definição, o BFS usa uma fila (queue) para correr o algoritmos, uma lista é tecnicamente a mesma coisa e mais simples de usar
+    //Em termos de definição, o BFS usa uma fila (queue) para correr o algoritmos
     public Queue<ProcuraConstrutiva> queue = new Queue<ProcuraConstrutiva>();
+
+    //Em termos de definição, o UCS usa uma fila prioritaria (queue) para correr o algoritmos, usa o custo para ordernar por prioridade
     public PriorityQueue<ProcuraConstrutiva, int> priorityQueue = new PriorityQueue<ProcuraConstrutiva, int>();
 
     // Em termos de definição, o DFS usa uma pilha (stack) para correr o seu algoritmo de recursão. Como Stack tem uma função de Pop (retira o ultimo elemento da pilha), usamos este em vez de lista
     public Stack<ProcuraConstrutiva> stack = new Stack<ProcuraConstrutiva>();
+#endregion
+#region Algorithms
     public int LarguraPrimeiro()
     {
         queue.Enqueue(this);
@@ -110,26 +115,28 @@ class ProcuraConstrutiva {
         }
         return -1;
     }
-
+#endregion
+#region Utils
     public void SetCost(int custo)
     {
         cost = custo;
     }
+    
     public void Expand(List<ProcuraConstrutiva> sucessores){
         geracoes++;
         expansoes += sucessores.Count();
     }
-
+    
     public void AddResult(int value){
         results.Add(value);
     }
 
-    virtual public List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores, int custo) {
-        return sucessores;
-    }
+    virtual public List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores, int custo) { return sucessores; }
 
     public virtual void SolucaoVazia() {}
+
 	public virtual bool SolucaoCompleta() { return false; }    
+
     virtual public void Debug(){}
 
     void LimpaTudo(){
@@ -141,7 +148,7 @@ class ProcuraConstrutiva {
         expansoes = 0;
         geracoes = 0;
     }
-
+#endregion
     public void Teste(){
         Console.Clear();
         while(true){

@@ -1,7 +1,7 @@
 /*
     Author: Miguel Gonçalves
     Class: Oito Damas
-    Description: Solves the 8 Queens problem
+    Description: Solves the N Queens problem
     Notes: ICloneable is a derivative class that allows us to make a deep copy of an object 
 */
 class OitoDamas : ProcuraConstrutiva, ICloneable {
