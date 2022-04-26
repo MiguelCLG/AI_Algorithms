@@ -46,7 +46,7 @@ class ProcuraConstrutiva {
 
                 sucessores = queue.ElementAt(i).Sucessores(sucessores, cost);
 
-                //queue.ElementAt(i).Debug();
+                queue.ElementAt(i).Debug();
                 foreach (ProcuraConstrutiva sucessor in sucessores)
                 {
                     queue.Enqueue(sucessor);                
