@@ -6,15 +6,15 @@
 */
 
 class NoThreeInLine : ProcuraConstrutiva, ICloneable {
+    const int K = 2;
+    const int N = 5;
     public override List<int> Board {get; set;}
 
-    int boardSize = 4;
-    int checkersPerLine = 2;
+    public override int BoardSize { get; set; }
+    public override int CheckersPerLine { get; set; }
 
     public NoThreeInLine(){
         Board = new List<int>();
-        boardSize = 4;
-        checkersPerLine = 2;
     }
     
     public NoThreeInLine(List<int> a){
@@ -25,21 +25,15 @@ class NoThreeInLine : ProcuraConstrutiva, ICloneable {
         return new NoThreeInLine(Board);
     }
 
-    void ConfigureSearch(int n, int k)
-    {
-        boardSize = n;
-        checkersPerLine = k;
-    }
-
-    public override List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores, int custo, string algorithm)
+    public override List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores, int custo)
     {
         int boardCount = Board.Count();
-        for (int posicao=0; posicao < boardSize * boardSize; posicao++)
+        for (int posicao=0; posicao < BoardSize * BoardSize; posicao++)
         {   
             int j = 0;
             for (; j < boardCount; j++)
             {   
-                if(!Utils.CanPlaceChecker(posicao, Board, boardSize, checkersPerLine)){
+                if(!Utils.CanPlaceChecker(posicao, Board, BoardSize, CheckersPerLine)){
                     break;
                 }
             }
@@ -49,8 +43,7 @@ class NoThreeInLine : ProcuraConstrutiva, ICloneable {
                 NoThreeInLine sucessor = ObjectExtensions.Copy(this);
                 sucessor.Board.Add(posicao);
                 sucessor.Board.Sort();
-                //if(!IsDuplicate((ProcuraConstrutiva)sucessor, algorithm))
-                    sucessores.Add(sucessor);
+                sucessores.Add(sucessor);
             }
             
         }
@@ -66,25 +59,25 @@ class NoThreeInLine : ProcuraConstrutiva, ICloneable {
     }
 
     public override bool SolucaoCompleta() {
-        if(Board.Count() != boardSize * checkersPerLine) return false;
+        if(Board.Count() != BoardSize * CheckersPerLine) return false;
         Console.WriteLine("Número de damas no tabuleiro: " + Board.Count());
         return (
-            Utils.VerificarLinhas(Board, boardSize, checkersPerLine) &&
-            Utils.VerificarColunas(Board, boardSize, checkersPerLine) &&
-            Utils.VerificarDiagonais(Board, boardSize, checkersPerLine)
+            Utils.VerificarLinhas(Board, BoardSize, CheckersPerLine) &&
+            Utils.VerificarColunas(Board, BoardSize, CheckersPerLine) &&
+            Utils.VerificarDiagonais(Board, BoardSize, CheckersPerLine)
         );
     }
     public override void Debug()
     {
         Console.WriteLine();
-        for (int i = 0; i < boardSize; i++)
+        for (int i = 0; i < BoardSize; i++)
         {
             
                 Console.WriteLine();
-                for (var j = 0; j < boardSize; j++)
+                for (var j = 0; j < BoardSize; j++)
                 {
                     int cor=((i + j)%2 > 0 ? 43 : 43);  // 176:178  --- jm 03/4/2018
-                    int boardPos = i * boardSize + j;
+                    int boardPos = i * BoardSize + j;
                     if(Board.Contains(boardPos))
                         Console.Write("{0} ", (char)68);  // 16:17   --- jm 03/4/2018
                     else Console.Write("{0} ",(char)cor);

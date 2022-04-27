@@ -37,6 +37,7 @@ static class Utils{
     }
 
     public static bool VerificarLinhas(List<int> board, int boardSize, int checkersPerLine){
+        Console.Write("Linhas: ");
         int count = 0;
         for (int linha = 0; linha < boardSize; linha++)
         {
@@ -53,14 +54,14 @@ static class Utils{
                         return false;
                     }
             }
-            Console.WriteLine("{0} ", count);
+            Console.Write("{0} ", count);
         }
 
         return true;
     }
 
     public static bool VerificarColunas(List<int> board, int boardSize, int checkersPerLine) {
-        Console.WriteLine("Colunas: ");
+        Console.Write("Colunas: ");
         int count = 0;
         for (int coluna = 0; coluna < boardSize; coluna++)
         {
@@ -77,7 +78,7 @@ static class Utils{
                     return false;
                 }
             }
-            Console.WriteLine("{0} ", count);
+            Console.Write("{0} ", count);
         }
 
         return true;
@@ -262,5 +263,56 @@ static class Utils{
                 linha--;
             }}
         return true;
+    }
+
+    public static List<int> TranspostaMatrix(List<int> list, int boardSize){
+        int[] matrix = ConvertListToMatrix(list, boardSize);
+        int [] aux = matrix.Copy();
+        for (int i = 0; i < boardSize; i++)
+        {
+            for (int j = 0; j < boardSize; j++)
+            {
+                int indexVelho = i * boardSize + j;
+                int indexNovo = j * boardSize + i;
+                if(matrix[indexVelho] == -1) 
+                    aux[indexNovo] = matrix[indexVelho];
+                else
+                    aux[indexNovo] = indexNovo;
+            }
+        }
+        
+        // DebugMatrixes(aux, boardSize);
+        // DebugMatrixes(matrix, boardSize);
+
+        List<int> resultado = aux.ToList();
+        resultado.RemoveAll(i => i == -1);
+        resultado.Sort();
+        return resultado;
+    }
+
+    public static void DebugMatrixes(int[] matrix, int boardSize)
+    {
+        Console.WriteLine();
+        for (var i = 0; i < matrix.Length; i++)
+        {
+            if(i % boardSize == 0) Console.WriteLine();
+            Console.Write("{0} ", matrix[i] == -1? "." : matrix[i]);
+        }
+        Console.WriteLine();
+    }
+    public static int[] ConvertListToMatrix(List<int> list, int boardSize)
+    {
+        int[] matrix = new int[boardSize * boardSize];
+        for (int i = 0; i < boardSize * boardSize; i++)
+        {
+            if(list.Contains(i))
+            {
+                matrix[i] = i;
+            }
+            else{
+                matrix[i] = -1;
+            }
+        }
+        return matrix;
     }
 }

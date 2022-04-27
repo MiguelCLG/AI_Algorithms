@@ -26,7 +26,7 @@ class OitoDamas : ProcuraConstrutiva, ICloneable {
         return new OitoDamas(damas);
     }
 
-    public override List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores, int custo = 0, string algorithm = "bfs"){
+    public override List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores, int custo = 0){
 
         int novaLinha=damas.Count();
         for(int i=0;i<NUMERO_DE_DAMAS;i++) {
