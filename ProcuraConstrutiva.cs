@@ -213,19 +213,19 @@ class ProcuraConstrutiva {
             LimpaTudo();
             switch(op) {
                 case "1": 
-                    SetTimer();
+                    //SetTimer();
                     Console.WriteLine("Largura Primeiro: " + LarguraPrimeiro().ToString());
-                    aTimer.Stop();
+                    //aTimer.Stop();
                     break;
                 case "2": 
-                    SetTimer();
+                    //SetTimer();
                     Console.WriteLine("Profundidade Primeiro: " + ProfundidadePrimeiro(stack, visitados).ToString());
-                    aTimer.Stop();
+                    //aTimer.Stop();
                     break;
                 case "3": 
-                    SetTimer();
+                    //SetTimer();
                     Console.WriteLine("Custo Uniforme: " + CustoUniforme(priorityQueue, visitados).ToString());
-                    aTimer.Stop();
+                    //aTimer.Stop();
                     break;
                 case "4": 
                     Console.Write("Definir N: ");
@@ -255,7 +255,7 @@ class ProcuraConstrutiva {
                     Console.WriteLine("Opção não válida!");
                     break;
             }
-            aTimer.Dispose();
+            //aTimer.Dispose();
 
         }
     }
