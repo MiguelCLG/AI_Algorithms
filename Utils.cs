@@ -1,6 +1,8 @@
-using System.Runtime.Serialization.Formatters.Binary;
-using System.IO;
-
+/*
+    Author: Miguel Gonçalves
+    Class: Static Utils
+    Description: Has any calculations or verifications for matrix
+*/
 static class Utils{
     
     public static bool CanPlaceChecker(int posicao, List<int> board, int boardSize, int checkersPerLine){

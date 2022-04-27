@@ -3,8 +3,9 @@
     Class: Procura Construtiva
     Description: Contains search algorithms like:
         - Breadth First Search
-        - Depth First Search *
-        - Uniform cost *
+        - Depth First Search
+        - Uniform cost
+        - AStar *
     Notes: * has no implementation yet
 */
 
@@ -26,6 +27,9 @@ class ProcuraConstrutiva {
     //Em termos de definição, o UCS usa uma fila prioritaria (queue) para correr o algoritmos, usa o custo para ordernar por prioridade
     public PriorityQueue<ProcuraConstrutiva, int> priorityQueue = new PriorityQueue<ProcuraConstrutiva, int>();
 
+    public virtual List<int> Board { get; set; }
+
+
     // Em termos de definição, o DFS usa uma pilha (stack) para correr o seu algoritmo de recursão. Como Stack tem uma função de Pop (retira o ultimo elemento da pilha), usamos este em vez de lista
     public Stack<ProcuraConstrutiva> stack = new Stack<ProcuraConstrutiva>();
 #endregion
@@ -33,23 +37,29 @@ class ProcuraConstrutiva {
     public int LarguraPrimeiro()
     {
         queue.Enqueue(this);
-        for (int i = 0; i< queue.Count(); i++) {
-            if(queue.ElementAt(i).SolucaoCompleta())
-            {
-                queue.Last().Debug();
-                Console.WriteLine("expansoes: {0} geracoes: {1}", expansoes, geracoes);
-                return results.Last();
-            }
-            else
-            {
-                List<ProcuraConstrutiva> sucessores = new List<ProcuraConstrutiva>();
-
-                sucessores = queue.ElementAt(i).Sucessores(sucessores, cost);
-
-                queue.ElementAt(i).Debug();
-                foreach (ProcuraConstrutiva sucessor in sucessores)
+        while(queue.Count() > 0){
+            ProcuraConstrutiva currentQueueItem = queue.Dequeue();
+            List<ProcuraConstrutiva> duplicados = visitados.Where<ProcuraConstrutiva>(x => x.Board.SequenceEqual(currentQueueItem.Board)).ToList<ProcuraConstrutiva>();
+            if(duplicados.Count() == 0){
+                if(currentQueueItem.SolucaoCompleta())
                 {
-                    queue.Enqueue(sucessor);                
+                    queue.Last().Debug();
+                    Console.WriteLine("expansoes: {0} geracoes: {1}", expansoes, geracoes);
+                    return results.Last();
+                }
+                else
+                {
+                    List<ProcuraConstrutiva> sucessores = new List<ProcuraConstrutiva>();
+
+                    sucessores = currentQueueItem.Sucessores(sucessores, cost, "bfs");
+
+                    currentQueueItem.Debug();
+                    visitados.Add(currentQueueItem);
+                    foreach (ProcuraConstrutiva sucessor in sucessores)
+                    {
+                        queue.Enqueue(sucessor);                
+                    }
+                    
                 }
             }
         }
@@ -75,7 +85,7 @@ class ProcuraConstrutiva {
                 if(!visitados.Contains(currentNode))
                 {
                     List<ProcuraConstrutiva> nodes = new List<ProcuraConstrutiva>();
-                    nodes = currentNode.Sucessores(nodes, cost);
+                    nodes = currentNode.Sucessores(nodes, cost, "dfs");
                     visitados.Add(currentNode);
                     foreach (ProcuraConstrutiva sucessor in nodes)
                     {
@@ -105,7 +115,7 @@ class ProcuraConstrutiva {
             {
                 List<ProcuraConstrutiva> sucessores = new List<ProcuraConstrutiva>();
 
-                sucessores = currentElement.Sucessores(sucessores, geracoes);
+                sucessores = currentElement.Sucessores(sucessores, geracoes, "ucs");
 
                 foreach (ProcuraConstrutiva sucessor in sucessores)
                 {
@@ -131,7 +141,24 @@ class ProcuraConstrutiva {
         results.Add(value);
     }
 
-    virtual public List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores, int custo) { return sucessores; }
+    public bool IsDuplicate(ProcuraConstrutiva sucessor, string algorithm) {
+        bool result = false;
+        switch(algorithm){
+            case "bfs": 
+                result = queue.Contains(sucessor);
+                break;
+            case "dfs":
+                result = stack.Contains(sucessor);
+                break;
+            default: 
+                result = false;
+                break;
+        }
+
+        return result;
+    }
+
+    virtual public List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores, int custo, string algorithm) { return sucessores; }
 
     public virtual void SolucaoVazia() {}
 
