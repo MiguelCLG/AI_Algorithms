@@ -17,6 +17,7 @@ using System.Timers;
 class ProcuraConstrutiva {
 #region Estrutura de dados
     const int TIMER_LIMIT = 60000;
+    private static DateTime timerStart;
     public static int expansoes = 0;
     public static int geracoes = 0;
     public static List<int> results = new List<int>();
@@ -37,10 +38,11 @@ class ProcuraConstrutiva {
     public virtual int BoardSize { get; set; } = 4;
     public virtual int CheckersPerLine { get; set; } = 2;
 
-    private bool time = false;
+    private static bool time = false;
     // Em termos de definição, o DFS usa uma pilha (stack) para correr o seu algoritmo de recursão. Como Stack tem uma função de Pop (retira o ultimo elemento da pilha), usamos este em vez de lista
     public Stack<ProcuraConstrutiva> stack = new Stack<ProcuraConstrutiva>();
 #endregion
+
 #region Algorithms
     public int LarguraPrimeiro()
     {
@@ -79,7 +81,6 @@ class ProcuraConstrutiva {
 
     public int ProfundidadePrimeiro(Stack<ProcuraConstrutiva> stack, List<ProcuraConstrutiva> visitados)
     {
-
         while (stack.Count() > 0)
         {
             if(time) return -1;
@@ -94,8 +95,10 @@ class ProcuraConstrutiva {
                 // Verifica se o node não foi marcado como visitado
                 // Se não, então percorre o algoritmo e adiciona os filhos ao stack
                 // se foi visitado, então vai descartar esse node e vai ao seguinte no stack
-                if(!visitados.Contains(currentNode))
-                {
+                List<ProcuraConstrutiva> duplicados = visitados.Where<ProcuraConstrutiva>(x => 
+                x.Board.SequenceEqual(currentNode.Board) || x.Board.SequenceEqual(Utils.TranspostaMatrix(currentNode.Board, BoardSize))
+                ).ToList<ProcuraConstrutiva>();
+                if(duplicados.Count() == 0){
                     List<ProcuraConstrutiva> nodes = new List<ProcuraConstrutiva>();
                     nodes = currentNode.Sucessores(nodes, cost);
                     visitados.Add(currentNode);
@@ -141,6 +144,7 @@ class ProcuraConstrutiva {
         return -1;
     }
 #endregion
+
 #region Utils
     public void SetCost(int custo)
     {
@@ -177,21 +181,26 @@ class ProcuraConstrutiva {
     }
 #endregion
 
-    private void SetTimer()
+#region Timer
+    private static void SetTimer()
     {
         // Create a timer with a two second interval.
-        aTimer = new System.Timers.Timer(TIMER_LIMIT);
+        aTimer = new System.Timers.Timer(10000);
         // Hook up the Elapsed event for the timer. 
-        aTimer.Elapsed += OnTimedEvent;
+        aTimer.Elapsed += CreateTimer;
+        timerStart = DateTime.Now;
         aTimer.AutoReset = true;
         aTimer.Enabled = true;
     }
 
-    private void OnTimedEvent(Object source, ElapsedEventArgs e)
-    {
-        Console.WriteLine("The Elapsed event was raised at {0:HH:mm:ss.fff}",e.SignalTime);
-        time = true;
+    private static void CreateTimer(Object source, ElapsedEventArgs e) {
+        TimeSpan currentTimer = DateTime.Now - timerStart;
+        Console.WriteLine("Time Elapsed: {0}s", Math.Abs(currentTimer.TotalSeconds));
+        if(currentTimer.TotalMilliseconds > TIMER_LIMIT)
+            time = true;
     }
+#endregion
+
     public void Teste(){
         Console.Clear();
         BoardSize = 4;

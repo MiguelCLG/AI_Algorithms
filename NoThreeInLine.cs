@@ -24,7 +24,8 @@ class NoThreeInLine : ProcuraConstrutiva, ICloneable {
     public override List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores, int custo)
     {
         int boardCount = Board.Count();
-        for (int posicao=0; posicao < BoardSize * BoardSize; posicao++)
+        // Console.WriteLine("boardCount: {0} BoardSize: {1} CheckersPerLine: {2}", boardCount, BoardSize, CheckersPerLine);
+        for (int posicao=0; posicao < BoardSize*BoardSize; posicao++)
         {   
             int j = 0;
             for (; j < boardCount; j++)
