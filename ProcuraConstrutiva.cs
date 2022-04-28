@@ -27,18 +27,19 @@ class ProcuraConstrutiva {
 
     public List<ProcuraConstrutiva> visitados = new List<ProcuraConstrutiva>();
 
-    //Em termos de definição, o BFS usa uma fila (queue) para correr o algoritmos
-    public Queue<ProcuraConstrutiva> queue = new Queue<ProcuraConstrutiva>();
-
-    //Em termos de definição, o UCS usa uma fila prioritaria (queue) para correr o algoritmos, usa o custo para ordernar por prioridade
-    public PriorityQueue<ProcuraConstrutiva, int> priorityQueue = new PriorityQueue<ProcuraConstrutiva, int>();
-
     public virtual List<int> Board { get; set; } = new List<int>();
 
     public virtual int BoardSize { get; set; } = 4;
     public virtual int CheckersPerLine { get; set; } = 2;
 
     private static bool time = false;
+    
+    //Em termos de definição, o BFS usa uma fila (queue) para correr o algoritmos
+    public Queue<ProcuraConstrutiva> queue = new Queue<ProcuraConstrutiva>();
+
+    //Em termos de definição, o UCS usa uma fila prioritaria (queue) para correr o algoritmos, usa o custo para ordernar por prioridade
+    public PriorityQueue<ProcuraConstrutiva, int> priorityQueue = new PriorityQueue<ProcuraConstrutiva, int>();
+
     // Em termos de definição, o DFS usa uma pilha (stack) para correr o seu algoritmo de recursão. Como Stack tem uma função de Pop (retira o ultimo elemento da pilha), usamos este em vez de lista
     public Stack<ProcuraConstrutiva> stack = new Stack<ProcuraConstrutiva>();
 #endregion
@@ -49,25 +50,24 @@ class ProcuraConstrutiva {
         queue.Enqueue(this);
         while(queue.Count() > 0){
             if(time) return -1;
-            ProcuraConstrutiva currentQueueItem = queue.Dequeue();
-            List<ProcuraConstrutiva> duplicados = visitados.Where<ProcuraConstrutiva>(x => 
-            x.Board.SequenceEqual(currentQueueItem.Board) || x.Board.SequenceEqual(Utils.TranspostaMatrix(currentQueueItem.Board, BoardSize))
-            ).ToList<ProcuraConstrutiva>();
+            ProcuraConstrutiva currentNode = queue.Dequeue();
+            List<int> transposta = Utils.TranspostaMatrix(currentNode.Board, BoardSize);
+            List<ProcuraConstrutiva> duplicados = VerificaDuplicados(currentNode, transposta);
             if(duplicados.Count() == 0){
-                if(currentQueueItem.SolucaoCompleta())
+                if(currentNode.SolucaoCompleta())
                 {
-                    currentQueueItem.Debug();
+                    currentNode.Debug();
                     Console.WriteLine("expansoes: {0} geracoes: {1}", expansoes, geracoes);
-                    return currentQueueItem.Board.Count();
+                    return currentNode.Board.Count();
                 }
                 else
                 {
                     List<ProcuraConstrutiva> sucessores = new List<ProcuraConstrutiva>();
 
-                    sucessores = currentQueueItem.Sucessores(sucessores, cost);
+                    sucessores = currentNode.Sucessores(sucessores, cost);
 
-                    if(debug > 0) currentQueueItem.Debug();
-                    visitados.Add(currentQueueItem);
+                    if(debug > 0) currentNode.Debug();
+                    visitados.Add(currentNode);
                     foreach (ProcuraConstrutiva sucessor in sucessores)
                     {
                         queue.Enqueue(sucessor);                
@@ -84,8 +84,8 @@ class ProcuraConstrutiva {
         while (stack.Count() > 0)
         {
             if(time) return -1;
-            // Verifica se o node atual tem a solução
             ProcuraConstrutiva currentNode = stack.Pop();
+            // Verifica se o node atual tem a solução
             if(currentNode.SolucaoCompleta())
             {
                 currentNode.Debug();
@@ -95,9 +95,9 @@ class ProcuraConstrutiva {
                 // Verifica se o node não foi marcado como visitado
                 // Se não, então percorre o algoritmo e adiciona os filhos ao stack
                 // se foi visitado, então vai descartar esse node e vai ao seguinte no stack
-                List<ProcuraConstrutiva> duplicados = visitados.Where<ProcuraConstrutiva>(x => 
-                x.Board.SequenceEqual(currentNode.Board) || x.Board.SequenceEqual(Utils.TranspostaMatrix(currentNode.Board, BoardSize))
-                ).ToList<ProcuraConstrutiva>();
+                List<int> transposta = Utils.TranspostaMatrix(currentNode.Board, BoardSize);
+                List<ProcuraConstrutiva> duplicados = VerificaDuplicados(currentNode, transposta);
+
                 if(duplicados.Count() == 0){
                     List<ProcuraConstrutiva> nodes = new List<ProcuraConstrutiva>();
                     nodes = currentNode.Sucessores(nodes, cost);
@@ -122,22 +122,26 @@ class ProcuraConstrutiva {
         priorityQueue.Enqueue(this, 0);
         while (priorityQueue.Count > 0) {
             if(time) return -1;
-            ProcuraConstrutiva currentElement = priorityQueue.Dequeue();
-            if(currentElement.SolucaoCompleta())
-            {
-                currentElement.Debug();
-                Console.WriteLine("Expansoes: {0} Geracoes: {1}", expansoes, geracoes);
-                return results.Last();
-            }
-            else
-            {
-                List<ProcuraConstrutiva> sucessores = new List<ProcuraConstrutiva>();
-
-                sucessores = currentElement.Sucessores(sucessores, geracoes);
-
-                foreach (ProcuraConstrutiva sucessor in sucessores)
+            ProcuraConstrutiva currentNode = priorityQueue.Dequeue();
+            List<int> transposta = Utils.TranspostaMatrix(currentNode.Board, BoardSize);
+            List<ProcuraConstrutiva> duplicados = VerificaDuplicados(currentNode, transposta);
+            if(duplicados.Count == 0){
+                if(currentNode.SolucaoCompleta())
                 {
-                    priorityQueue.Enqueue(sucessor, sucessor.cost);
+                    currentNode.Debug();
+                    Console.WriteLine("Expansoes: {0} Geracoes: {1}", expansoes, geracoes);
+                    return currentNode.Board.Count();
+                }
+                else
+                {
+                    List<ProcuraConstrutiva> sucessores = new List<ProcuraConstrutiva>();
+
+                    sucessores = currentNode.Sucessores(sucessores, geracoes);
+
+                    foreach (ProcuraConstrutiva sucessor in sucessores)
+                    {
+                        priorityQueue.Enqueue(sucessor, sucessor.cost);
+                    }
                 }
             }
         }
@@ -146,6 +150,13 @@ class ProcuraConstrutiva {
 #endregion
 
 #region Utils
+    public List<ProcuraConstrutiva> VerificaDuplicados(ProcuraConstrutiva currentNode, List<int> transposta){
+        return visitados.Where<ProcuraConstrutiva>(x => 
+                x.Board.SequenceEqual(currentNode.Board) || 
+                x.Board.SequenceEqual(transposta)
+                //x.Board.SequenceEqual(Utils.SymmetricMatrix(currentNode.Board, transposta, BoardSize))
+            ).ToList<ProcuraConstrutiva>();
+    }
     public void SetCost(int custo)
     {
         cost = custo;

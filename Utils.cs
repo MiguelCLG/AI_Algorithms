@@ -265,6 +265,22 @@ static class Utils{
         return true;
     }
 
+public static List<int> SymmetricMatrix (List<int> origList, List<int> transposedList, int boardSize){
+    int[] origMatrix = ConvertListToMatrix(origList, boardSize);
+    int[] transposedMatrix = ConvertListToMatrix(transposedList, boardSize);
+    int[] result = new int[boardSize * boardSize];
+    for(int i = 0; i < boardSize; i++)
+        for (var j = 0; j < boardSize; j++)
+        {
+           if (i<=j) result[i * boardSize + j] = i*boardSize-i*(i+1)/2+j;              //above the diagonal
+           else if( i>j ) result[i * boardSize + j] = j*boardSize-j*(j+1)/2+i;              //below the diagonal
+        }
+
+    List<int> resultado = result.ToList();
+    resultado.RemoveAll(i => i == -1);
+    resultado.Sort();
+    return resultado;
+}
     public static List<int> TranspostaMatrix(List<int> list, int boardSize){
         int[] matrix = ConvertListToMatrix(list, boardSize);
         int [] aux = matrix.Copy();
