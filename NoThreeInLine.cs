@@ -6,23 +6,19 @@
 */
 
 class NoThreeInLine : ProcuraConstrutiva, ICloneable {
-    const int K = 2;
-    const int N = 5;
-    public override List<int> Board {get; set;}
+    public override List<int> Board {get; set;} = new List<int>();
 
-    public override int BoardSize { get; set; }
-    public override int CheckersPerLine { get; set; }
+    public override int BoardSize { get; set; } = 0;
+    public override int CheckersPerLine { get; set; } = 0;
 
     public NoThreeInLine(){
         Board = new List<int>();
     }
     
-    public NoThreeInLine(List<int> a){
-        Board = a;
-    }
+
     public object Clone()
     {
-        return new NoThreeInLine(Board);
+        return new NoThreeInLine();
     }
 
     public override List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores, int custo)

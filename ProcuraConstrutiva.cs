@@ -32,10 +32,10 @@ class ProcuraConstrutiva {
     //Em termos de definição, o UCS usa uma fila prioritaria (queue) para correr o algoritmos, usa o custo para ordernar por prioridade
     public PriorityQueue<ProcuraConstrutiva, int> priorityQueue = new PriorityQueue<ProcuraConstrutiva, int>();
 
-    public virtual List<int> Board { get; set; }
+    public virtual List<int> Board { get; set; } = new List<int>();
 
-    public virtual int BoardSize { get; set; }
-    public virtual int CheckersPerLine { get; set; }
+    public virtual int BoardSize { get; set; } = 4;
+    public virtual int CheckersPerLine { get; set; } = 2;
 
     private bool time = false;
     // Em termos de definição, o DFS usa uma pilha (stack) para correr o seu algoritmo de recursão. Como Stack tem uma função de Pop (retira o ultimo elemento da pilha), usamos este em vez de lista
@@ -46,7 +46,7 @@ class ProcuraConstrutiva {
     {
         queue.Enqueue(this);
         while(queue.Count() > 0){
-            //if(time >= TIMER_LIMIT) return -1;
+            if(time) return -1;
             ProcuraConstrutiva currentQueueItem = queue.Dequeue();
             List<ProcuraConstrutiva> duplicados = visitados.Where<ProcuraConstrutiva>(x => 
             x.Board.SequenceEqual(currentQueueItem.Board) || x.Board.SequenceEqual(Utils.TranspostaMatrix(currentQueueItem.Board, BoardSize))
@@ -82,6 +82,7 @@ class ProcuraConstrutiva {
 
         while (stack.Count() > 0)
         {
+            if(time) return -1;
             // Verifica se o node atual tem a solução
             ProcuraConstrutiva currentNode = stack.Pop();
             if(currentNode.SolucaoCompleta())
@@ -117,6 +118,7 @@ class ProcuraConstrutiva {
     {
         priorityQueue.Enqueue(this, 0);
         while (priorityQueue.Count > 0) {
+            if(time) return -1;
             ProcuraConstrutiva currentElement = priorityQueue.Dequeue();
             if(currentElement.SolucaoCompleta())
             {
@@ -169,18 +171,16 @@ class ProcuraConstrutiva {
         priorityQueue.Clear();
         visitados.Clear();
         expansoes = 0;
+        time = false;
         geracoes = 0;
+        Board = new List<int>();
     }
 #endregion
 
-   /* void Tick(int signalTime)
-    {
-        time = signalTime;
-    }*/
     private void SetTimer()
     {
         // Create a timer with a two second interval.
-        aTimer = new System.Timers.Timer(1000);
+        aTimer = new System.Timers.Timer(TIMER_LIMIT);
         // Hook up the Elapsed event for the timer. 
         aTimer.Elapsed += OnTimedEvent;
         aTimer.AutoReset = true;
@@ -190,14 +190,13 @@ class ProcuraConstrutiva {
     private void OnTimedEvent(Object source, ElapsedEventArgs e)
     {
         Console.WriteLine("The Elapsed event was raised at {0:HH:mm:ss.fff}",e.SignalTime);
-        //if(e.SignalTime. > TIMER_LIMIT) time = true;
+        time = true;
     }
     public void Teste(){
         Console.Clear();
         BoardSize = 4;
         CheckersPerLine = 2;
         while(true){
-            SolucaoVazia();
             Console.WriteLine("---------------------------------------------------------------------------------------------");
             Console.WriteLine("------------------------------Algoritmos Inteligencia Artificial-----------------------------");
             Console.WriteLine("---------------------------------------------------------------------------------------------");
@@ -211,21 +210,22 @@ class ProcuraConstrutiva {
             
             string op = Console.ReadLine();
             LimpaTudo();
+            SolucaoVazia();
             switch(op) {
                 case "1": 
-                    //SetTimer();
+                    SetTimer();
                     Console.WriteLine("Largura Primeiro: " + LarguraPrimeiro().ToString());
-                    //aTimer.Stop();
+                    aTimer.Stop();
                     break;
                 case "2": 
-                    //SetTimer();
+                    SetTimer();
                     Console.WriteLine("Profundidade Primeiro: " + ProfundidadePrimeiro(stack, visitados).ToString());
-                    //aTimer.Stop();
+                    aTimer.Stop();
                     break;
                 case "3": 
-                    //SetTimer();
+                    SetTimer();
                     Console.WriteLine("Custo Uniforme: " + CustoUniforme(priorityQueue, visitados).ToString());
-                    //aTimer.Stop();
+                    aTimer.Stop();
                     break;
                 case "4": 
                     Console.Write("Definir N: ");
@@ -249,13 +249,13 @@ class ProcuraConstrutiva {
                         debug = d;
                     break;
                 case "0": 
+                    aTimer.Dispose();
                     System.Environment.Exit(0);
                     break;
                 default: 
                     Console.WriteLine("Opção não válida!");
                     break;
             }
-            //aTimer.Dispose();
 
         }
     }
