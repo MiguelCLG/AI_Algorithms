@@ -265,7 +265,7 @@ static class Utils{
         return true;
     }
 
-public static List<int> SymmetricMatrix (List<int> origList, List<int> transposedList, int boardSize){
+    public static List<int> SymmetricMatrix (List<int> origList, List<int> transposedList, int boardSize){
     int[] origMatrix = ConvertListToMatrix(origList, boardSize);
     int[] transposedMatrix = ConvertListToMatrix(transposedList, boardSize);
     int[] result = new int[boardSize * boardSize];
@@ -316,6 +316,7 @@ public static List<int> SymmetricMatrix (List<int> origList, List<int> transpose
         }
         Console.WriteLine();
     }
+
     public static int[] ConvertListToMatrix(List<int> list, int boardSize)
     {
         int[] matrix = new int[boardSize * boardSize];
@@ -330,5 +331,19 @@ public static List<int> SymmetricMatrix (List<int> origList, List<int> transpose
             }
         }
         return matrix;
+    }
+
+    public static List<int> FillCleanBoard(int boardSize)
+    {
+        List<int> result = new List<int>();
+        for (var i = 0; i < boardSize; i++)
+        {
+            for (var j = 0; j < boardSize; j++)
+            {
+                result.Add(0);
+            }
+        }
+
+        return result;
     }
 }

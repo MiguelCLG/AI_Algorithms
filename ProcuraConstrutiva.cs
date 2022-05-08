@@ -10,6 +10,7 @@
 */
 
 //TODO: Results array not returning number of queens
+//TODO: Create distinct function so we free this class from the inside of the successors
 
 using System;
 using System.Timers;
@@ -21,16 +22,11 @@ class ProcuraConstrutiva {
     public static int expansoes = 0;
     public static int geracoes = 0;
     public static List<int> results = new List<int>();
-    private static int debug = 0;
-    private static System.Timers.Timer aTimer;
+    public static int debug = 0;
+    public static System.Timers.Timer aTimer;
     private int cost = 0;
 
     public List<ProcuraConstrutiva> visitados = new List<ProcuraConstrutiva>();
-
-    public virtual List<int> Board { get; set; } = new List<int>();
-
-    public virtual int BoardSize { get; set; } = 4;
-    public virtual int CheckersPerLine { get; set; } = 2;
 
     private static bool time = false;
     
@@ -51,14 +47,12 @@ class ProcuraConstrutiva {
         while(queue.Count() > 0){
             if(time) return -1;
             ProcuraConstrutiva currentNode = queue.Dequeue();
-            List<int> transposta = Utils.TranspostaMatrix(currentNode.Board, BoardSize);
-            List<ProcuraConstrutiva> duplicados = VerificaDuplicados(currentNode, transposta);
-            if(duplicados.Count() == 0){
+            if(!IsDuplicate(currentNode, visitados)){
                 if(currentNode.SolucaoCompleta())
                 {
                     currentNode.Debug();
                     Console.WriteLine("expansoes: {0} geracoes: {1}", expansoes, geracoes);
-                    return currentNode.Board.Count();
+                    return currentNode.GetResult();
                 }
                 else
                 {
@@ -89,16 +83,14 @@ class ProcuraConstrutiva {
             if(currentNode.SolucaoCompleta())
             {
                 currentNode.Debug();
-                return currentNode.Board.Count();
+                return currentNode.GetResult();
             }
             else{
                 // Verifica se o node não foi marcado como visitado
                 // Se não, então percorre o algoritmo e adiciona os filhos ao stack
                 // se foi visitado, então vai descartar esse node e vai ao seguinte no stack
-                List<int> transposta = Utils.TranspostaMatrix(currentNode.Board, BoardSize);
-                List<ProcuraConstrutiva> duplicados = VerificaDuplicados(currentNode, transposta);
 
-                if(duplicados.Count() == 0){
+                if(!IsDuplicate(currentNode, visitados)){
                     List<ProcuraConstrutiva> nodes = new List<ProcuraConstrutiva>();
                     nodes = currentNode.Sucessores(nodes, cost);
                     visitados.Add(currentNode);
@@ -110,7 +102,7 @@ class ProcuraConstrutiva {
                     }
                     int result = ProfundidadePrimeiro(stack, visitados);
                     if(result > 0)
-                        return results.Last();
+                        return currentNode.GetResult();
                 }
             }
         }
@@ -123,14 +115,12 @@ class ProcuraConstrutiva {
         while (priorityQueue.Count > 0) {
             if(time) return -1;
             ProcuraConstrutiva currentNode = priorityQueue.Dequeue();
-            List<int> transposta = Utils.TranspostaMatrix(currentNode.Board, BoardSize);
-            List<ProcuraConstrutiva> duplicados = VerificaDuplicados(currentNode, transposta);
-            if(duplicados.Count == 0){
+            if(!IsDuplicate(currentNode, visitados)){
                 if(currentNode.SolucaoCompleta())
                 {
                     currentNode.Debug();
                     Console.WriteLine("Expansoes: {0} Geracoes: {1}", expansoes, geracoes);
-                    return currentNode.Board.Count();
+                    return currentNode.GetResult();
                 }
                 else
                 {
@@ -140,7 +130,7 @@ class ProcuraConstrutiva {
 
                     foreach (ProcuraConstrutiva sucessor in sucessores)
                     {
-                        priorityQueue.Enqueue(sucessor, sucessor.cost);
+                        priorityQueue.Enqueue(sucessor, (sucessor.cost + visitados.Count()) * -1);
                     }
                 }
             }
@@ -150,13 +140,6 @@ class ProcuraConstrutiva {
 #endregion
 
 #region Utils
-    public List<ProcuraConstrutiva> VerificaDuplicados(ProcuraConstrutiva currentNode, List<int> transposta){
-        return visitados.Where<ProcuraConstrutiva>(x => 
-                x.Board.SequenceEqual(currentNode.Board) || 
-                x.Board.SequenceEqual(transposta)
-                //x.Board.SequenceEqual(Utils.SymmetricMatrix(currentNode.Board, transposta, BoardSize))
-            ).ToList<ProcuraConstrutiva>();
-    }
     public void SetCost(int custo)
     {
         cost = custo;
@@ -171,15 +154,18 @@ class ProcuraConstrutiva {
         results.Add(value);
     }
 
-    virtual public List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores, int custo) { return sucessores; }
+    public virtual List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores, int custo) { return sucessores; }
 
     public virtual void SolucaoVazia() {}
 
 	public virtual bool SolucaoCompleta() { return false; }    
 
-    virtual public void Debug(){}
+    public virtual void Debug(){}
 
-    void LimpaTudo(){
+    public virtual int GetResult(){ return 2; }
+    public virtual bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraConstrutiva> visitados){ return false; }
+
+    public void LimpaTudo(){
         stack.Clear();
         queue.Clear();
         stack.Push(this);
@@ -188,12 +174,11 @@ class ProcuraConstrutiva {
         expansoes = 0;
         time = false;
         geracoes = 0;
-        Board = new List<int>();
     }
 #endregion
 
 #region Timer
-    private static void SetTimer()
+    public static void SetTimer()
     {
         // Create a timer with a two second interval.
         aTimer = new System.Timers.Timer(10000);
@@ -204,7 +189,7 @@ class ProcuraConstrutiva {
         aTimer.Enabled = true;
     }
 
-    private static void CreateTimer(Object source, ElapsedEventArgs e) {
+    public static void CreateTimer(Object source, ElapsedEventArgs e) {
         TimeSpan currentTimer = DateTime.Now - timerStart;
         Console.WriteLine("Time Elapsed: {0}s", Math.Abs(currentTimer.TotalSeconds));
         if(currentTimer.TotalMilliseconds > TIMER_LIMIT)
@@ -212,71 +197,5 @@ class ProcuraConstrutiva {
     }
 #endregion
 
-    public void Teste(){
-        Console.Clear();
-        BoardSize = 4;
-        CheckersPerLine = 2;
-        while(true){
-            Console.WriteLine("---------------------------------------------------------------------------------------------");
-            Console.WriteLine("------------------------------Algoritmos Inteligencia Artificial-----------------------------");
-            Console.WriteLine("---------------------------------------------------------------------------------------------");
-            Console.WriteLine("[1] - Largura Primeiro | [2] - Profundidade Primeiro | [3] - Custo Uniforme  [Procuras Cegas]");
-            Console.WriteLine("[4] - Definir N({0})   | [5] - Definir K ({1})       | [6] - Debug ({2})      [Configurações]", BoardSize, CheckersPerLine, debug);
-            Console.WriteLine("[0] - Sair                                                                          [Sistema]");
-            Console.WriteLine("---------------------------------------  Estatísticas  --------------------------------------");
-            Console.WriteLine("Expansoes: {0}                Geracoes: {1}", expansoes, geracoes);
-            Console.WriteLine("---------------------------------------------------------------------------------------------");
-            Console.Write("Opcao: ");
-            
-            string op = Console.ReadLine();
-            LimpaTudo();
-            SolucaoVazia();
-            switch(op) {
-                case "1": 
-                    SetTimer();
-                    Console.WriteLine("Largura Primeiro: " + LarguraPrimeiro().ToString());
-                    aTimer.Stop();
-                    break;
-                case "2": 
-                    SetTimer();
-                    Console.WriteLine("Profundidade Primeiro: " + ProfundidadePrimeiro(stack, visitados).ToString());
-                    aTimer.Stop();
-                    break;
-                case "3": 
-                    SetTimer();
-                    Console.WriteLine("Custo Uniforme: " + CustoUniforme(priorityQueue, visitados).ToString());
-                    aTimer.Stop();
-                    break;
-                case "4": 
-                    Console.Write("Definir N: ");
-                    if(!int.TryParse(Console.ReadLine(), out int n))
-                        Console.WriteLine("Invalid value entered");
-                    else
-                        BoardSize = n;
-                    break;
-                case "5": 
-                    Console.Write("Definir K: ");
-                    if(!int.TryParse(Console.ReadLine(), out int k))
-                        Console.WriteLine("Invalid value entered");
-                    else
-                        CheckersPerLine = k;
-                    break;
-                case "6": 
-                    Console.Write("Definir debug: ");
-                    if(!int.TryParse(Console.ReadLine(), out int d))
-                        Console.WriteLine("Invalid value entered");
-                    else
-                        debug = d;
-                    break;
-                case "0": 
-                    aTimer.Dispose();
-                    System.Environment.Exit(0);
-                    break;
-                default: 
-                    Console.WriteLine("Opção não válida!");
-                    break;
-            }
-
-        }
-    }
+    public virtual void Teste(){}
 }

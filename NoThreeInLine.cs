@@ -6,13 +6,15 @@
 */
 
 class NoThreeInLine : ProcuraConstrutiva, ICloneable {
-    public override List<int> Board {get; set;} = new List<int>();
+    public List<int> Board {get; set;} = new List<int>();
 
-    public override int BoardSize { get; set; } = 0;
-    public override int CheckersPerLine { get; set; } = 0;
+    public int BoardSize { get; set; }
+    public int CheckersPerLine { get; set; }
 
-    public NoThreeInLine(){
+    public NoThreeInLine(int n = 4, int k = 2){
         Board = new List<int>();
+        BoardSize = n;
+        CheckersPerLine = k;
     }
     
 
@@ -46,7 +48,7 @@ class NoThreeInLine : ProcuraConstrutiva, ICloneable {
         }
 
         AddResult(Board.Count());
-        Expand(sucessores);        
+        Expand(sucessores);
         return sucessores;
     }
 
@@ -64,6 +66,28 @@ class NoThreeInLine : ProcuraConstrutiva, ICloneable {
             Utils.VerificarDiagonais(Board, BoardSize, CheckersPerLine)
         );
     }
+
+    public override bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraConstrutiva> visitados)
+    {
+        NoThreeInLine node = (NoThreeInLine)currentNode;
+        List<int> transposta = Utils.TranspostaMatrix(node.Board, node.BoardSize);
+        
+        return VerificaDuplicados(node, transposta, visitados).Count() > 0;
+    }
+
+    public List<ProcuraConstrutiva> VerificaDuplicados(NoThreeInLine currentNode, List<int> transposta, List<ProcuraConstrutiva> marked){
+        List<NoThreeInLine> visitados = new List<NoThreeInLine>();
+        foreach (var item in marked)
+        {
+            visitados.Add((NoThreeInLine) item);
+        }
+        return visitados.Where<NoThreeInLine>(x => 
+                x.Board.SequenceEqual(currentNode.Board) || 
+                x.Board.SequenceEqual(transposta)
+                //x.Board.SequenceEqual(Utils.SymmetricMatrix(currentNode.Board, transposta, BoardSize))
+            ).ToList<ProcuraConstrutiva>();
+    }
+
     public override void Debug()
     {
         Console.WriteLine();
@@ -85,22 +109,70 @@ class NoThreeInLine : ProcuraConstrutiva, ICloneable {
         Console.WriteLine("Número de peças no board: {0}", Board.Count());
     }
 
-    //calcula a transposta da nossa matriz
-    // void Transposta(NoThreeInLine estado)
-    // {
-    //     int novoBoard[boardSize * boardSize];
-    //     for (int i = 0; i < boardSize; i++)
-    //     {
-    //         for (int j = 0; j < boardSize; j++)
-    //         {
-    //             int indexVelho = i * boardSize + j;
-    //             int indexNovo = j * boardSize + i;
-    //             novoBoard[indexNovo] = estado->Board[indexVelho];
-    //         }
-    //     }
-    //     for (int i = 0; i < boardSize * boardSize; i++)
-    //     {
-    //         estado->Board[i] = novoBoard[i];
-    //     }
-    // }
+    public override int GetResult(){ return Board.Count(); }
+    public override void Teste(){
+        Console.Clear();
+        while(true){
+            Console.WriteLine("---------------------------------------------------------------------------------------------");
+            Console.WriteLine("------------------------------Algoritmos Inteligencia Artificial-----------------------------");
+            Console.WriteLine("---------------------------------------------------------------------------------------------");
+            Console.WriteLine("[1] - Largura Primeiro | [2] - Profundidade Primeiro | [3] - Custo Uniforme  [Procuras Cegas]");
+            Console.WriteLine("[4] - Definir N({0})   | [5] - Definir K ({1})       | [6] - Debug ({2})      [Configurações]", BoardSize, CheckersPerLine, debug);
+            Console.WriteLine("[0] - Sair                                                                          [Sistema]");
+            Console.WriteLine("---------------------------------------  Estatísticas  --------------------------------------");
+            Console.WriteLine("Expansoes: {0}                Geracoes: {1}", expansoes, geracoes);
+            Console.WriteLine("---------------------------------------------------------------------------------------------");
+            Console.Write("Opcao: ");
+            
+            string op = Console.ReadLine();
+            LimpaTudo();
+            SolucaoVazia();
+            switch(op) {
+                case "1": 
+                    SetTimer();
+                    Console.WriteLine("Largura Primeiro: " + LarguraPrimeiro().ToString());
+                    aTimer.Stop();
+                    break;
+                case "2": 
+                    SetTimer();
+                    Console.WriteLine("Profundidade Primeiro: " + ProfundidadePrimeiro(stack, visitados).ToString());
+                    aTimer.Stop();
+                    break;
+                case "3": 
+                    SetTimer();
+                    Console.WriteLine("Custo Uniforme: " + CustoUniforme(priorityQueue, visitados).ToString());
+                    aTimer.Stop();
+                    break;
+                case "4": 
+                    Console.Write("Definir N: ");
+                    if(!int.TryParse(Console.ReadLine(), out int n))
+                        Console.WriteLine("Invalid value entered");
+                    else
+                        BoardSize = n;
+                    break;
+                case "5": 
+                    Console.Write("Definir K: ");
+                    if(!int.TryParse(Console.ReadLine(), out int k))
+                        Console.WriteLine("Invalid value entered");
+                    else
+                        CheckersPerLine = k;
+                    break;
+                case "6": 
+                    Console.Write("Definir debug: ");
+                    if(!int.TryParse(Console.ReadLine(), out int d))
+                        Console.WriteLine("Invalid value entered");
+                    else
+                        debug = d;
+                    break;
+                case "0": 
+                    aTimer.Dispose();
+                    System.Environment.Exit(0);
+                    break;
+                default: 
+                    Console.WriteLine("Opção não válida!");
+                    break;
+            }
+
+        }
+    }
 }
