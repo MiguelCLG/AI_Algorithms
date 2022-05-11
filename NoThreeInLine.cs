@@ -10,7 +10,7 @@ class NoThreeInLine : ProcuraConstrutiva, ICloneable {
 
     public int BoardSize { get; set; }
     public int CheckersPerLine { get; set; }
-
+    public override int Cost { get; set; }
     public NoThreeInLine(int n = 4, int k = 2){
         Board = new List<int>();
         BoardSize = n;
@@ -23,7 +23,7 @@ class NoThreeInLine : ProcuraConstrutiva, ICloneable {
         return new NoThreeInLine();
     }
 
-    public override List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores, int custo)
+    public override List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores)
     {
         int boardCount = Board.Count();
         // Console.WriteLine("boardCount: {0} BoardSize: {1} CheckersPerLine: {2}", boardCount, BoardSize, CheckersPerLine);
@@ -71,16 +71,17 @@ class NoThreeInLine : ProcuraConstrutiva, ICloneable {
     {
         NoThreeInLine node = (NoThreeInLine)currentNode;
         List<int> transposta = Utils.TranspostaMatrix(node.Board, node.BoardSize);
-        
-        return VerificaDuplicados(node, transposta, visitados).Count() > 0;
+
+        List<NoThreeInLine> marked = new List<NoThreeInLine>();
+        foreach (var item in visitados)
+        {
+            marked.Add((NoThreeInLine) item);
+        }
+        return VerificaDuplicados(node, transposta, marked).Count() > 0;
     }
 
-    public List<ProcuraConstrutiva> VerificaDuplicados(NoThreeInLine currentNode, List<int> transposta, List<ProcuraConstrutiva> marked){
-        List<NoThreeInLine> visitados = new List<NoThreeInLine>();
-        foreach (var item in marked)
-        {
-            visitados.Add((NoThreeInLine) item);
-        }
+    public List<ProcuraConstrutiva> VerificaDuplicados(NoThreeInLine currentNode, List<int> transposta, List<NoThreeInLine> visitados){
+        
         return visitados.Where<NoThreeInLine>(x => 
                 x.Board.SequenceEqual(currentNode.Board) || 
                 x.Board.SequenceEqual(transposta)

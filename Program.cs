@@ -6,10 +6,12 @@ namespace AiAlgoritmos
     {
         private static OitoDamas oitoDamas = new OitoDamas();
         private static NoThreeInLine noThreeInLine = new NoThreeInLine();
+
+        private static Torres torres = new Torres();
         static void Main(string[] args)
         {
 
-            noThreeInLine.Teste();
+            torres.Teste();
             Console.ReadKey();
         }
     }

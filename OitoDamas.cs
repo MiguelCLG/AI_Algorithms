@@ -7,9 +7,11 @@
 class OitoDamas : ProcuraConstrutiva, ICloneable {
 
 	public List<int> damas {get ; private set; }
+    public override int Cost {get; set;}
     const int NUMERO_DE_DAMAS = 10;
     public OitoDamas(){
         damas = new List<int>();
+        Cost = 0;
     }
     
     public OitoDamas(List<int> a){
@@ -26,7 +28,7 @@ class OitoDamas : ProcuraConstrutiva, ICloneable {
         return new OitoDamas(damas);
     }
 
-    public override List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores, int custo = 0){
+    public override List<ProcuraConstrutiva> Sucessores(List<ProcuraConstrutiva> sucessores){
 
         int novaLinha=damas.Count();
         for(int i=0;i<NUMERO_DE_DAMAS;i++) {
@@ -37,7 +39,7 @@ class OitoDamas : ProcuraConstrutiva, ICloneable {
             if(j==novaLinha) {
                 OitoDamas sucessor = ObjectExtensions.Copy(this); // Object Extensions is an extension class to the System namespace that will allow us to instanciate a new object from itself
                 sucessor.damas.Add(i);
-                sucessor.SetCost(custo % NUMERO_DE_DAMAS + i);
+                sucessor.Cost = -(NUMERO_DE_DAMAS + i);
                 sucessores.Add(sucessor);
             }
         }
