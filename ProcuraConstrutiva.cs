@@ -22,6 +22,9 @@ class ProcuraConstrutiva {
     private static DateTime timerStart;
     public static int expansoes = 0;
     public static int geracoes = 0;
+    public static int avaliacoes = 0;
+
+    public static List<int> allNodesBoardPieces = new List<int>();
     public static List<int> results = new List<int>();
     public static int debug = 0;
     public static System.Timers.Timer aTimer;
@@ -171,11 +174,60 @@ class ProcuraConstrutiva {
                     }
                 }
             }
-            else{
-                Console.WriteLine("Encontrou duplicado");
-                Console.ReadKey();
+            // else{
+            //     Console.WriteLine("Encontrou duplicado");
+            //     Console.ReadKey();
+            // }
+        }
+        if(results.Count() != 0) {
+            DebugResultado();
+            return results.Distinct().ToList<int>().Last();
+        }
+        return -1;
+    }
+
+    public int AStar (PriorityQueue<ProcuraConstrutiva, int> priorityQueue, List<ProcuraConstrutiva> visitados)
+    {
+        visitados = new List<ProcuraConstrutiva>();
+        priorityQueue.Enqueue(this, 0);
+        while(priorityQueue.Count > 0)
+        {
+            if(time) 
+            {
+                if(results.Count() != 0) 
+                {
+                    DebugResultado();
+                    return results.Distinct().ToList<int>().Last();
+                }
+                return -1;
+            }
+
+            ProcuraConstrutiva currentNode = priorityQueue.Dequeue();
+            if(!IsDuplicate(currentNode, visitados))
+            {
+                if(currentNode.SolucaoCompleta())
+                {
+                    currentNode.Debug();
+                    Console.WriteLine("Expansoes: {0} Geracoes: {1}", expansoes, geracoes);
+                    DebugResultado();
+                    return allNodesBoardPieces.Max();
+                }
+                else
+                {
+                    List<ProcuraConstrutiva> sucessores = new List<ProcuraConstrutiva>();
+
+                    sucessores = currentNode.Sucessores(sucessores);
+                    visitados.Add(currentNode);
+                    if(debug > 0) currentNode.Debug();
+
+                    foreach (ProcuraConstrutiva sucessor in sucessores)
+                    {
+                        priorityQueue.Enqueue(sucessor, sucessor.Distancia() + sucessor.Heuristica());
+                    }
+                }
             }
         }
+
         if(results.Count() != 0) {
             DebugResultado();
             return results.Distinct().ToList<int>().Last();
@@ -185,7 +237,16 @@ class ProcuraConstrutiva {
 #endregion
 
 #region Utils
-    
+
+    public virtual int Distancia(){
+        return 1;
+    }
+
+    public virtual int Heuristica(){
+        avaliacoes++;
+        return 0;
+    }
+
     public void Expand(List<ProcuraConstrutiva> sucessores){
         geracoes++;
         expansoes += sucessores.Count();
@@ -207,7 +268,6 @@ class ProcuraConstrutiva {
 
     public virtual void Debug(){}
     public virtual void DebugResultado(){
-        results.OrderByDescending(o => o);
         List<int> distintos = results.Distinct().ToList<int>();
         Console.Write("[");
         foreach (int result in distintos)
@@ -224,11 +284,14 @@ class ProcuraConstrutiva {
         stack.Clear();
         queue.Clear();
         stack.Push(this);
+        results.Clear();
+        allNodesBoardPieces.Clear();
         priorityQueue.Clear();
         visitados.Clear();
         expansoes = 0;
         time = false;
         geracoes = 0;
+        avaliacoes = 0;
         SolucaoVazia();
     }
 #endregion

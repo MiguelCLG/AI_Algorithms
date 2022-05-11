@@ -12,12 +12,14 @@ class Torres : ProcuraConstrutiva, ICloneable {
     public List<PlaceInBoard> Board { get; set; }
     public List<int> AvailableSpaces { get; set; }
     public int BoardSize { get; set; }
+    public int NumeroDeAtaques {get; set;}
     public override int Cost { get; set;}
     public Torres(int n = 4){
         Board = new List<PlaceInBoard>();
         BoardSize = n;
         AvailableSpaces = new List<int>(Utils.FillCleanBoard(BoardSize));
         Cost = 0;
+        NumeroDeAtaques = 0;
     }
     
     public object Clone()
@@ -37,7 +39,7 @@ class Torres : ProcuraConstrutiva, ICloneable {
                 int j = 0;
                 for (; j < boardCount; j++)
                 {   
-                    if(!Utils.CanPlaceTower(Board, currentTower, pos, BoardSize)){
+                    if(!CanPlaceTower(Board, currentTower, pos, BoardSize)){
                         canNotPlaceCount++;
                         break;
                     }
@@ -53,9 +55,14 @@ class Torres : ProcuraConstrutiva, ICloneable {
                     sucessor.Board.Add(torre);
                     sucessor.Board = sucessor.Board.OrderBy(o => o.posicao).ToList();
                     sucessor.Cost += AvailableSpaces.Count() + posicao + k;
+                    sucessor.NumeroDeAtaques = 0;
                     if(!sucessor.SolucaoCompleta())
-                        sucessores.Add(sucessor);
+                        {
+                            allNodesBoardPieces.Add(sucessor.Board.Count());
+                            sucessores.Add(sucessor);
+                        }
                     else
+                        allNodesBoardPieces.Add(sucessor.Board.Count());
                         AddResult(sucessor.Board.Count());
                 }
                 currentTower = currentTower.Next();
@@ -73,9 +80,100 @@ class Torres : ProcuraConstrutiva, ICloneable {
         return sucessores;
         }
 
+
+    public bool CanPlaceTower(List<PlaceInBoard> board, Towers tower, int posicao, int boardSize){
+        if(board.Where(w => w.posicao == posicao).Count() > 0) return false; // se existe uma torre nessa posição retorna falso
+        return CheckBoundaries(board, tower, posicao, boardSize);
+    }
+
+    public bool CheckBoundaries(List<PlaceInBoard> board, Towers tower, int posicao, int boardSize, int nivel = 0)
+    {
+        //TODO: Check piece if in the same line and column. But only once to avoid infinite loops
+
+        // Procura por cada casa na linha da posicao e por pela torre que está a tentar meter no board
+        int linha = posicao / boardSize;
+        int coluna = posicao % boardSize;
+
+        List<PlaceInBoard> sameTowerCheck = new List<PlaceInBoard>();
+
+        List<PlaceInBoard> aTowerCheck = new List<PlaceInBoard>();
+        List<PlaceInBoard> bTowerCheck = new List<PlaceInBoard>();
+        List<PlaceInBoard> cTowerCheck = new List<PlaceInBoard>();
+        //percorre linha da posicao, iniciando no inicio da linha, esquerda para direita
+        for (int i = 0; i < boardSize; i++)
+        {
+            int boardPos = linha * boardSize + i;
+            if (boardPos != posicao)
+            {
+                sameTowerCheck.AddRange(board.Where(w => w.posicao == boardPos && w.cor == tower).ToList());
+                if(sameTowerCheck.Count() > 0)
+                    return false;
+                
+                aTowerCheck.AddRange(board.Where(w => w.posicao == boardPos && w.cor == Towers.A).ToList());
+                
+                if (aTowerCheck.Count() > 0 && nivel == 0)
+                {    
+                    NumeroDeAtaques++;
+                    if(!CheckBoundaries(board, tower, aTowerCheck.First().posicao, boardSize, 1)) return false;
+                }
+                bTowerCheck.AddRange(board.Where(w => w.posicao == boardPos && w.cor == Towers.B).ToList());
+                
+                if (bTowerCheck.Count() > 0 && nivel == 0)
+                {    
+                    NumeroDeAtaques++;
+                    if(!CheckBoundaries(board, tower, bTowerCheck.First().posicao, boardSize, 1)) return false;
+                }
+                cTowerCheck.AddRange(board.Where(w => w.posicao == boardPos && w.cor == Towers.C).ToList());
+                
+                if (cTowerCheck.Count() > 0 && nivel == 0)
+                {    
+                    NumeroDeAtaques++;
+                    if(!CheckBoundaries(board, tower, cTowerCheck.First().posicao, boardSize, 1)) return false;
+                }
+
+                if(aTowerCheck.Count() > 1 || bTowerCheck.Count() > 1 || cTowerCheck.Count() > 1)
+                    return false;
+            }
+        }
+
+        for (int j = 0; j < boardSize; j++)
+        {
+            int boardPos = j * boardSize + coluna;
+            if(boardPos != posicao){
+                sameTowerCheck.AddRange(board.Where(w => w.posicao == boardPos && w.cor == tower).ToList());
+                if(sameTowerCheck.Count() > 0)
+                    return false;
+                
+                aTowerCheck.AddRange(board.Where(w => w.posicao == boardPos && w.cor == Towers.A).ToList());
+                if (aTowerCheck.Count() > 0 && nivel == 0)
+                {    
+                    NumeroDeAtaques++;
+                    if(!CheckBoundaries(board, tower, aTowerCheck.First().posicao, boardSize, 1)) return false;
+                }
+                bTowerCheck.AddRange(board.Where(w => w.posicao == boardPos && w.cor == Towers.B).ToList());
+                if (bTowerCheck.Count() > 0 && nivel == 0)
+                {    
+                    NumeroDeAtaques++;
+                    if(!CheckBoundaries(board, tower, bTowerCheck.First().posicao, boardSize, 1)) return false;
+                }
+                cTowerCheck.AddRange(board.Where(w => w.posicao == boardPos && w.cor == Towers.C).ToList());
+                if (cTowerCheck.Count() > 0 && nivel == 0)
+                {    
+                    NumeroDeAtaques++;
+                    if(!CheckBoundaries(board, tower, cTowerCheck.First().posicao, boardSize, 1)) return false;
+                }
+
+                if(aTowerCheck.Count() > 1 || bTowerCheck.Count() > 1 || cTowerCheck.Count() > 1)
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
     public override void SolucaoVazia(){ Board.Clear(); }
 
-    public override bool SolucaoCompleta() { return AvailableSpaces.Count() == 1; }
+    public override bool SolucaoCompleta() { return AvailableSpaces.Count() == 0; }
     public override void Debug() {
         Console.WriteLine();
         for (int i = 0; i < BoardSize; i++)
@@ -121,6 +219,11 @@ public override bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraCon
             ).ToList<ProcuraConstrutiva>();
     }
 
+public override int Heuristica()
+{
+	base.Heuristica();   
+	return NumeroDeAtaques - Board.Count() + AvailableSpaces.Count();
+}
     public override int GetResult(){ return Board.Count(); }
     public override void Teste(){
         Console.Clear();
@@ -129,10 +232,11 @@ public override bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraCon
             Console.WriteLine("------------------------------Algoritmos Inteligencia Artificial-----------------------------");
             Console.WriteLine("---------------------------------------------------------------------------------------------");
             Console.WriteLine("[1] - Largura Primeiro | [2] - Profundidade Primeiro | [3] - Custo Uniforme  [Procuras Cegas]");
-            Console.WriteLine("[4] - Definir N({0})   | [5] - Debug ({1})                                   [Configurações]", BoardSize, debug);
+            Console.WriteLine("[4] - A Star           | [5] - Best First Search*    | [6] - Greedy Search*  [Procuras Informadas]");
+            Console.WriteLine("[8] - Definir N({0})   | [9] - Debug ({1})                                   [Configurações]", BoardSize, debug);
             Console.WriteLine("[0] - Sair                                                                          [Sistema]");
             Console.WriteLine("---------------------------------------  Estatísticas  --------------------------------------");
-            Console.WriteLine("Expansoes: {0}                Geracoes: {1}", expansoes, geracoes);
+            Console.WriteLine("Expansoes: {0}                           Geracoes: {1}                        Avaliacoes: {2}", expansoes, geracoes, avaliacoes);
             Console.WriteLine("---------------------------------------------------------------------------------------------");
             Console.Write("Opcao: ");
             
@@ -156,13 +260,18 @@ public override bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraCon
                     aTimer.Stop();
                     break;
                 case "4": 
+                    SetTimer();
+                    Console.WriteLine("A Star: " + AStar(priorityQueue, visitados).ToString());
+                    aTimer.Stop();
+                    break;
+                case "8": 
                     Console.Write("Definir N: ");
                     if(!int.TryParse(Console.ReadLine(), out int n))
                         Console.WriteLine("Invalid value entered");
                     else
                         BoardSize = n;
                     break;
-                case "5": 
+                case "9": 
                     Console.Write("Definir debug: ");
                     if(!int.TryParse(Console.ReadLine(), out int d))
                         Console.WriteLine("Invalid value entered");
@@ -170,7 +279,8 @@ public override bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraCon
                         debug = d;
                     break;
                 case "0": 
-                    aTimer.Dispose();
+                    if(aTimer != null)
+                        aTimer.Dispose();
                     System.Environment.Exit(0);
                     break;
                 default: 
