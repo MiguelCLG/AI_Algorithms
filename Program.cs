@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AiAlgoritmos
+﻿namespace AiAlgoritmos
 {
     class Program
     {
@@ -10,7 +8,6 @@ namespace AiAlgoritmos
         private static Torres torres = new Torres();
         static void Main(string[] args)
         {
-
             torres.Teste();
             Console.ReadKey();
         }

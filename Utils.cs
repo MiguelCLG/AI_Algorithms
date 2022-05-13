@@ -19,6 +19,10 @@ public struct PlaceInBoard {
         cor = Towers.A;
         posicao = -1;
     }
+    public PlaceInBoard(Towers t, int pos ){
+        cor = t;
+        posicao = pos;
+    }
 }
 
 static class Utils{
