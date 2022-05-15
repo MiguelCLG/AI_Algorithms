@@ -10,7 +10,7 @@ class NoThreeInLine : ProcuraConstrutiva, ICloneable {
 
     public int BoardSize { get; set; }
     public int CheckersPerLine { get; set; }
-    public override int Cost { get; set; }
+    public int Cost { get; set; }
     public NoThreeInLine(int n = 4, int k = 2){
         Board = new List<int>();
         BoardSize = n;

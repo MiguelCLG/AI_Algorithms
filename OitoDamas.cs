@@ -7,7 +7,7 @@
 class OitoDamas : ProcuraConstrutiva, ICloneable {
 
 	public List<int> damas {get ; private set; }
-    public override int Cost {get; set;}
+    public int Cost {get; set;}
     const int NUMERO_DE_DAMAS = 10;
     public OitoDamas(){
         damas = new List<int>();

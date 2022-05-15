@@ -31,7 +31,7 @@ class ProcuraConstrutiva {
     public static List<int> results = new List<int>();
     public static int debug = 0;
     public static System.Timers.Timer aTimer;
-    public virtual int Cost {get; set;}
+    public static int CustoTotal {get; set;}
 
     public int heuristica = 0;
     public static List<ProcuraConstrutiva> visitados = new List<ProcuraConstrutiva>();
@@ -157,6 +157,7 @@ class ProcuraConstrutiva {
 
                     foreach (ProcuraConstrutiva sucessor in sucessores)
                     {
+                        CustoTotal += sucessor.Distancia();
                         priorityQueue.Enqueue(sucessor, sucessor.Distancia());
                     }
                 }
@@ -198,6 +199,7 @@ class ProcuraConstrutiva {
                     if(avaliacoes <= limiteAvaliações || limiteAvaliações == 0) 
                         foreach (ProcuraConstrutiva sucessor in sucessores)
                         {
+                            CustoTotal += sucessor.Distancia();
                             priorityQueue.Enqueue(sucessor, Math.Max(currentNode.Heuristica(), sucessor.Distancia() + sucessor.Heuristica()));
                         }
                 }
@@ -234,9 +236,12 @@ class ProcuraConstrutiva {
                 visitados.Add(currentNode);
                 if(debug > 0) currentNode.Debug();
 
-                foreach (ProcuraConstrutiva sucessor in sucessores)
-                {
-                    priorityQueue.Enqueue(sucessor, Math.Max(currentNode.Heuristica(), sucessor.Heuristica()));
+                if(avaliacoes <= limiteAvaliações || limiteAvaliações == 0){
+                    foreach (ProcuraConstrutiva sucessor in sucessores)
+                    {
+                        CustoTotal += sucessor.Distancia();
+                        priorityQueue.Enqueue(sucessor, Math.Max(currentNode.Heuristica(), sucessor.Heuristica()));
+                    }
                 }
             }
 
@@ -278,55 +283,19 @@ class ProcuraConstrutiva {
                     node.heuristica = node.Heuristica();
                 }
                 nodes.OrderBy(s => s.heuristica);
-                foreach (ProcuraConstrutiva sucessor in nodes)
-                {
-                    stack.Push(sucessor);
-                    if(avaliacoes <= limiteAvaliações || limiteAvaliações == 0){
-                        int resultado = sucessor.MelhorPrimeiro(nivel - 1);
-                        if(resultado >= 0){
-                            return resultado;
-                        }
+                if(avaliacoes <= limiteAvaliações || limiteAvaliações == 0){
+                    foreach (ProcuraConstrutiva sucessor in nodes)
+                    {
+                        CustoTotal += sucessor.Distancia();
+                        stack.Push(sucessor);
+                            int resultado = sucessor.MelhorPrimeiro(nivel - 1);
+                            if(resultado >= 0){
+                                return resultado;
+                            }
                     }
-                }
+                }   
             }
         return -1; // nao encontrou solução
-    }
-
-public int BestFirst (int nivel) {
-	if(SolucaoCompleta()) { // um no objectivo!
-		Debug();
-        DebugResultado();
-        return GetResult();
-	}
-	if(nivel<0 || nivel>1) { // continuar a procura
-		// ainda nao e o no objectivo
-		List<ProcuraConstrutiva> sucessores = new List<ProcuraConstrutiva>();
-		List<int> custo = new List<int>();
-		List<int> id = new List<int>();
-		sucessores = Sucessores(sucessores);
-		// calcular as heuristicas
-		
-        List<int> heuristicas = new List<int>();
-        foreach(var sucessor in sucessores)
-            heuristicas.Add(sucessor.Heuristica());
-        heuristicas.Remove(-1);
-        sucessores.Remove(null);
-        custo.Remove(-1);
-        heuristicas.OrderByDescending(o => o);
-		
-		// tentar todo os sucessores, um de cada vez
-        foreach (var sucessor in sucessores){
-			int resultado=sucessor.BestFirst(nivel-1);
-			if(resultado>=0) { // este sucessor resolveu o problema, devolver
-				sucessor.Debug();
-                sucessor.DebugResultado();
-                return resultado;
-			}
-		}
-        sucessores.Clear();
-	}
-	// percorreram-se todos os sucessores e nada (ou atingiu-se o limite), devolver -1
-	return -1;
     }
 
 #endregion
@@ -360,6 +329,7 @@ public int BestFirst (int nivel) {
     public virtual void SolucaoVazia() {}
 
 	public virtual bool SolucaoCompleta() { return false; }    
+    public virtual void NovaSolucao(){}
 
     public virtual void Debug(){}
     public virtual void DebugResultado(){
@@ -394,6 +364,7 @@ public int BestFirst (int nivel) {
         time = false;
         geracoes = 0;
         avaliacoes = 0;
+        CustoTotal = 0;
         SolucaoVazia();
         GC.Collect();
     }

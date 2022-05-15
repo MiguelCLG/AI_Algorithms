@@ -16,7 +16,6 @@ class Torres : ProcuraConstrutiva {
     public List<int> AvailableSpaces { get; set; }
     public int BoardSize { get; set; }
     public int ConsistentCost {get; set;}
-    public override int Cost { get; set;}
 
     public List<int> SpacesToRemove { get; set; }
     public Torres(){
@@ -24,7 +23,6 @@ class Torres : ProcuraConstrutiva {
         BoardSize = 4;
         AvailableSpaces = new List<int>();
         SpacesToRemove = new List<int>();
-        Cost = 0;
         ConsistentCost = 0;
     }
     public Torres(int n){
@@ -32,7 +30,6 @@ class Torres : ProcuraConstrutiva {
         BoardSize = n;
         AvailableSpaces = new List<int>();
         SpacesToRemove = new List<int>();
-        Cost = 0;
         ConsistentCost = 0;
     }
     
@@ -94,7 +91,6 @@ class Torres : ProcuraConstrutiva {
                     sucessor.AvailableSpaces.Remove(pos);
                     sucessor.Board.Add(torre);
                     sucessor.Board = sucessor.Board.OrderBy(o => o.posicao).ToList();
-                    sucessor.Cost += AvailableSpaces.Count();
                     sucessor.ConsistentCost += 1;
 
                     //verifica se o sucessor já existe
@@ -222,7 +218,7 @@ class Torres : ProcuraConstrutiva {
         if(debug == 3) Console.ReadKey();
     }
 
-public override bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraConstrutiva> visitados)
+    public override bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraConstrutiva> visitados)
     {
         Torres node = (Torres)currentNode;
 
@@ -242,22 +238,72 @@ public override bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraCon
             ).ToList<ProcuraConstrutiva>();
     }
 
+/*     public override void NovaSolucao()
+    {
+        Towers currentTower = Towers.A; 
+        int aux = -1;
+        for(int i=0;i<3;i++)
+        {       
+            Random rand = new Random();
+            int boardPos = rand.Next(BoardSize * BoardSize);
+            if(aux >= 0 && boardPos != aux)
+                {
+                    Board.Add(new PlaceInBoard(currentTower, boardPos));
+                    currentTower.Next();
+                }
+            else
+                i--;
+        }    
+        custo=-1;
+    }
+    public override List<ProcuraMelhorativa> Vizinhanca(List<ProcuraMelhorativa> vizinhos)
+    {
+        // trocar a posicao de cada dama
+        for(int i=0;i<8;i++)
+            for(int j=0;j<8;j++)
+                if(j!=Board.ElementAt(i).posicao) {
+                    Torres vizinho = (Torres)Extensions.Clone(this);
+                    PlaceInBoard place = new PlaceInBoard(vizinho.Board.ElementAt(i).cor, j);
+                    vizinho.Board.RemoveAt(i);
+                    vizinho.Board.Add(place);
+                    vizinhos.Add(vizinho);
+			}
+        base.Vizinhanca(vizinhos);
+        return vizinhos;
+    }
+
+    public override int Avaliar()
+    {
+        base.Avaliar();
+        int custo=0;
+        // calcular o numero de pares de damas atacadas
+        Towers currentTower = Towers.A;
+        for(int i=0;i<7;i++)
+            for(int j=i+1;j<8;j++)
+                for(int k = 0; k < 3; k++){
+                    if(!CanPlaceTower(Board,currentTower,i * BoardSize + j, BoardSize ))
+                        custo++;
+                    currentTower.Next();
+                }
+        return custo;
+    } */
     public override int GetResult(){ return Board.Count(); }
     public override void Teste(){
         Console.Clear();
         while(true){
             base.Teste();
-            Console.WriteLine("---------------------------------------------------------------------------------------------");
-            Console.WriteLine("------------------------------Algoritmos Inteligencia Artificial-----------------------------");
-            Console.WriteLine("---------------------------------------------------------------------------------------------");
-            Console.WriteLine("[1] - Largura Primeiro | [2] - Profundidade Primeiro | [3] - Custo Uniforme   [Procuras Cegas]");
-            Console.WriteLine("[4] - A Star           | [5] - Sofrega    | [6] - Melhor Primeiro        [Procuras Informadas]");
-            Console.WriteLine("[8] - Definir N({0})   | [9] - Debug ({1}) | [10] - Limite Avaliacoes({2})     [Configurações]", BoardSize, debug, limiteAvaliações);
-            Console.WriteLine("[11] - Limite Nível({0})                                                       [Configurações]", limiteNivel);
-            Console.WriteLine("[0] - Sair                                                                           [Sistema]");
-            Console.WriteLine("---------------------------------------  Estatísticas  --------------------------------------");
-            Console.WriteLine("Expansoes: {0}                         Geracoes: {1}                        Avaliacoes: {2}", expansoes, geracoes, avaliacoes);
-            Console.WriteLine("---------------------------------------------------------------------------------------------");
+            Console.WriteLine("--------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine("-----------------------------------------Algoritmos Inteligencia Artificial-----------------------------------------");
+            Console.WriteLine("--------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine("[1] - Largura Primeiro | [2] - Profundidade Primeiro | [3] - Custo Uniforme                         [Procuras Cegas]");
+            Console.WriteLine("[4] - A Star           | [5] - Sofrega               | [6] - Melhor Primeiro                   [Procuras Informadas]");
+           /*  Console.WriteLine("[7] - Escalada do Monte                                                                        [Procuras Melhorativas]"); */
+            Console.WriteLine("[8] - Definir N({0})     | [9] - Debug ({1})             | [10] - Limite Avaliacoes({2})                   [Configurações]", BoardSize, debug, limiteAvaliações);
+            Console.WriteLine("[11]- Limite Nível({0})                                                                                [Configurações]", limiteNivel);
+            Console.WriteLine("[0] - Sair                                                                                                 [Sistema]");
+            Console.WriteLine("----------------------------------------------------Estatísticas----------------------------------------------------");
+            Console.WriteLine("Expansoes: {0}                     Custo Total: {1}                     Geracoes: {2}                     Avaliacoes: {3}", expansoes, CustoTotal, geracoes, avaliacoes);
+            Console.WriteLine("--------------------------------------------------------------------------------------------------------------------");
             Console.Write("Opcao: ");
             
             string op = Console.ReadLine();
@@ -301,12 +347,12 @@ public override bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraCon
                     aTimer.Stop();
                     DebugTimer();
                     break;
-                case "20": 
+                /* case "7": 
                     SetTimer();
-                    Console.WriteLine("Best First: " + BestFirst(limiteNivel).ToString());
+                    Console.WriteLine("Escalada Do Monte: " + EscaladaDoMonte(movePrimeiro).ToString());
                     aTimer.Stop();
                     DebugTimer();
-                    break;
+                    break; */
                 case "8": 
                     Console.Write("Definir N: ");
                     if(!int.TryParse(Console.ReadLine(), out int n))
@@ -342,6 +388,10 @@ public override bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraCon
                                 limiteNivel = limNivel;
                             }
                         break;
+                /* case "12":
+                    movePrimeiro = !movePrimeiro;
+                    Console.WriteLine("Move Primeiro: {0} ", movePrimeiro);
+                    break; */
                 case "0": 
                     if(aTimer != null)
                         aTimer.Dispose();
