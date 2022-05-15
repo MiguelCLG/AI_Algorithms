@@ -39,7 +39,7 @@ class NoThreeInLine : ProcuraConstrutiva, ICloneable {
 
             if(j == boardCount)    //pode adicionar dama       
             {
-                NoThreeInLine sucessor = ObjectExtensions.Copy(this);
+                NoThreeInLine sucessor = Extensions.Clone(this);
                 sucessor.Board.Add(posicao);
                 sucessor.Board.Sort();
                 sucessores.Add(sucessor);

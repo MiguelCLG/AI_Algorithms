@@ -37,7 +37,7 @@ class OitoDamas : ProcuraConstrutiva, ICloneable {
                 if(i==damas[j] || i==damas[j]+(novaLinha-j) || i==damas[j]-(novaLinha-j))
                     break;
             if(j==novaLinha) {
-                OitoDamas sucessor = ObjectExtensions.Copy(this); // Object Extensions is an extension class to the System namespace that will allow us to instanciate a new object from itself
+                OitoDamas sucessor = Extensions.Clone(this); // Object Extensions is an extension class to the System namespace that will allow us to instanciate a new object from itself
                 sucessor.damas.Add(i);
                 sucessor.Cost = -(NUMERO_DE_DAMAS + i);
                 sucessores.Add(sucessor);

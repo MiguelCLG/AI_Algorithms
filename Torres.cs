@@ -7,37 +7,38 @@
 */
 
 //TODO: Verificar sucessores, o que esta a acontecer na verificação?
-class Torres : ProcuraConstrutiva, ICloneable {
+
+using System.Runtime.CompilerServices;
+
+class Torres : ProcuraConstrutiva {
 
     public List<PlaceInBoard> Board { get; set; }
     public List<int> AvailableSpaces { get; set; }
     public int BoardSize { get; set; }
-    public int NumeroDeAtaques {get; set;}
     public int ConsistentCost {get; set;}
     public override int Cost { get; set;}
+
+    public List<int> SpacesToRemove { get; set; }
     public Torres(){
         Board = new List<PlaceInBoard>();
         BoardSize = 4;
-        AvailableSpaces = new List<int>(Utils.FillCleanBoard(BoardSize));
+        AvailableSpaces = new List<int>();
+        SpacesToRemove = new List<int>();
         Cost = 0;
-        NumeroDeAtaques = 0;
         ConsistentCost = 0;
     }
     public Torres(int n){
         Board = new List<PlaceInBoard>();
         BoardSize = n;
-        AvailableSpaces = new List<int>(Utils.FillCleanBoard(BoardSize));
+        AvailableSpaces = new List<int>();
+        SpacesToRemove = new List<int>();
         Cost = 0;
-        NumeroDeAtaques = 0;
         ConsistentCost = 0;
     }
     
-    public object Clone()
-    {
-        return new Torres(BoardSize);
-    }
 
-public override int Heuristica()
+
+    public override int Heuristica()
 {
 	base.Heuristica();
 	return AvailableSpaces.Count();
@@ -65,6 +66,16 @@ public override int Heuristica()
                 {   
                     if(!CanPlaceTower(Board, currentTower, pos, BoardSize)){
                         canNotPlaceCount++;
+                        if(canNotPlaceCount >=3)
+                        {
+                            AvailableSpaces.Remove(pos);
+                            //Se esta foi a ultima casa livre, entao re-adicionamos este node aos sucessores para reavaliar
+                            if(SolucaoCompleta())
+                                {
+                                    sucessores.Add(this);
+                                    return sucessores;
+                                }
+                        }
                         break;
                     }
                 }
@@ -78,13 +89,13 @@ public override int Heuristica()
                     torre.posicao = pos;
 
                     //setup do sucessor
-                    Torres sucessor = ObjectExtensions.Copy(this);
+                    Torres sucessor = (Torres)Extensions.Clone(this);
                     sucessor.AvailableSpaces.Remove(pos);
                     sucessor.Board.Add(torre);
                     sucessor.Board = sucessor.Board.OrderBy(o => o.posicao).ToList();
                     sucessor.Cost += AvailableSpaces.Count();
                     sucessor.ConsistentCost += 1;
-                    
+
                     //verifica se o sucessor já existe
                     if(!IsDuplicate(sucessor, visitados)){
                         allNodesBoardPieces.Add(sucessor.Board.Count());
@@ -95,18 +106,19 @@ public override int Heuristica()
             }
 
             // If we cant place any tower in this position, remove it from the AvailableSpaces
-            if(canNotPlaceCount >= 3)
+            /*  if(canNotPlaceCount >= 3)
             {
                 AvailableSpaces.Remove(pos);
                 if(SolucaoCompleta()) // se true temos de re-adicionar o sucessor pois este é uma solução completa
                 { 
                     sucessores.Add(this);
-                    AddResult(Board.Count());
+                    base.AddResult(Board.Count());
                 }
-            }
+            } */
         }
 
-        // AddResult(Board.Count());
+       /*  if(SolucaoCompleta())
+            AddResult(Board.Count()); */
         DebugAvailableSpaces.Add(AvailableSpaces.Count());
         base.Sucessores(sucessores);
         return sucessores;
@@ -149,7 +161,6 @@ public override int Heuristica()
                     )   && nivel == 0
                 )
                 {    
-                    NumeroDeAtaques++;
                     if(!CheckBoundaries(board, tower, boardPos, boardSize, 1)) return false;
                 }
                     aTowerCheck += (board.FindAll(fa => fa.posicao == boardPos && fa.cor == Towers.A).Count());
@@ -179,7 +190,6 @@ public override int Heuristica()
                     )   && nivel == 0
                 )
                 {    
-                    NumeroDeAtaques++;
                     if(!CheckBoundaries(board, tower, boardPos, boardSize, 1)) return false;
                 }
                     aTowerCheck += (board.FindAll(fa => fa.posicao == boardPos && fa.cor == Towers.A).Count());
@@ -222,6 +232,7 @@ public override int Heuristica()
         Console.WriteLine();
         Console.WriteLine("Número de peças no board: {0}", Board.Count());
         Console.WriteLine("Available Spaces: {0}", AvailableSpaces.Count());
+        if(debug == 3) Console.ReadKey();
     }
 
 public override bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraConstrutiva> visitados)
@@ -233,18 +244,14 @@ public override bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraCon
         {
             marked.Add((Torres) item);
         }
-        bool result = VerificaDuplicados(node, marked).Count() > 0;
-        if(result)
-            Console.Write("");
-        return result;
+
+        return VerificaDuplicados(node, marked).Count() > 0;
     }
 
     public List<ProcuraConstrutiva> VerificaDuplicados(Torres currentNode, List<Torres> visitados){
         
         return visitados.Where<Torres>(x => 
                 x.Board.SequenceEqual(currentNode.Board) 
-                // x.Board.SequenceEqual(transposta)
-                //x.Board.SequenceEqual(Utils.SymmetricMatrix(currentNode.Board, transposta, BoardSize))
             ).ToList<ProcuraConstrutiva>();
     }
 
@@ -257,8 +264,9 @@ public override bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraCon
             Console.WriteLine("------------------------------Algoritmos Inteligencia Artificial-----------------------------");
             Console.WriteLine("---------------------------------------------------------------------------------------------");
             Console.WriteLine("[1] - Largura Primeiro | [2] - Profundidade Primeiro | [3] - Custo Uniforme   [Procuras Cegas]");
-            Console.WriteLine("[4] - A Star           | [5] - Sofrega    | [6] - Greedy Search*        [Procuras Informadas]");
+            Console.WriteLine("[4] - A Star           | [5] - Sofrega    | [6] - Melhor Primeiro        [Procuras Informadas]");
             Console.WriteLine("[8] - Definir N({0})   | [9] - Debug ({1}) | [10] - Limite Avaliacoes({2})     [Configurações]", BoardSize, debug, limiteAvaliações);
+            Console.WriteLine("[11] - Limite Nível({0})                                                       [Configurações]", limiteNivel);
             Console.WriteLine("[0] - Sair                                                                           [Sistema]");
             Console.WriteLine("---------------------------------------  Estatísticas  --------------------------------------");
             Console.WriteLine("Expansoes: {0}                         Geracoes: {1}                        Avaliacoes: {2}", expansoes, geracoes, avaliacoes);
@@ -268,31 +276,49 @@ public override bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraCon
             string op = Console.ReadLine();
             LimpaTudo();
             SolucaoVazia();
+            AvailableSpaces = Utils.FillCleanBoard(BoardSize);
             switch(op) {
                 case "1": 
                     SetTimer();
                     Console.WriteLine("Largura Primeiro: " + LarguraPrimeiro().ToString());
                     aTimer.Stop();
+                    DebugTimer();
                     break;
                 case "2": 
                     SetTimer();
                     Console.WriteLine("Profundidade Primeiro: " + ProfundidadePrimeiro(stack, visitados).ToString());
                     aTimer.Stop();
+                    DebugTimer();
                     break;
                 case "3": 
                     SetTimer();
                     Console.WriteLine("Custo Uniforme: " + CustoUniforme(priorityQueue, visitados).ToString());
                     aTimer.Stop();
+                    DebugTimer();
                     break;
                 case "4": 
                     SetTimer();
                     Console.WriteLine("A Star: " + AStar(priorityQueue, visitados).ToString());
                     aTimer.Stop();
+                    DebugTimer();
                     break;
                 case "5": 
                     SetTimer();
                     Console.WriteLine("Sofrega: " + Sofrega(priorityQueue, visitados).ToString());
                     aTimer.Stop();
+                    DebugTimer();
+                    break;
+                case "6": 
+                    SetTimer();
+                    Console.WriteLine("Melhor Primeiro: " + MelhorPrimeiro(limiteNivel).ToString());
+                    aTimer.Stop();
+                    DebugTimer();
+                    break;
+                case "20": 
+                    SetTimer();
+                    Console.WriteLine("Best First: " + BestFirst(limiteNivel).ToString());
+                    aTimer.Stop();
+                    DebugTimer();
                     break;
                 case "8": 
                     Console.Write("Definir N: ");
@@ -318,6 +344,15 @@ public override bool IsDuplicate(ProcuraConstrutiva currentNode, List<ProcuraCon
                         else
                             {
                                 limiteAvaliações = limite;
+                            }
+                        break;
+                case "11":
+                    Console.Write("Definir Limite de Nivel: ");
+                    if(!int.TryParse(Console.ReadLine(), out int limNivel))
+                            Console.WriteLine("Invalid value entered");
+                        else
+                            {
+                                limiteNivel = limNivel;
                             }
                         break;
                 case "0": 

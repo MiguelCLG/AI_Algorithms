@@ -7,11 +7,11 @@
         - Uniform cost
         - AStar
         - Sofrega
+        - Melhor Primeiro
     Notes: * has no implementation yet
 */
 
-//TODO: Start developing search algorithm A star
-//TODO: Check if distinct is working properly
+//TODO: Review Profundidade Primeiro algorithm
 
 using System;
 using System.Timers;
@@ -25,7 +25,7 @@ class ProcuraConstrutiva {
     public static int avaliacoes = 0;
 
     public static int limiteAvaliações = 0;
-
+    public static int limiteNivel = 10;
     public static List<int> allNodesBoardPieces = new List<int>();
     public static List<int> DebugAvailableSpaces = new List<int>();
     public static List<int> results = new List<int>();
@@ -33,18 +33,19 @@ class ProcuraConstrutiva {
     public static System.Timers.Timer aTimer;
     public virtual int Cost {get; set;}
 
+    public int heuristica = 0;
     public static List<ProcuraConstrutiva> visitados = new List<ProcuraConstrutiva>();
 
     private static bool time = false;
     
     //Em termos de definição, o BFS usa uma fila (queue) para correr o algoritmos
-    public Queue<ProcuraConstrutiva> queue = new Queue<ProcuraConstrutiva>();
+    public static Queue<ProcuraConstrutiva> queue = new Queue<ProcuraConstrutiva>();
 
     //Em termos de definição, o UCS usa uma fila prioritaria (queue) para correr o algoritmos, usa o custo para ordernar por prioridade
-    public PriorityQueue<ProcuraConstrutiva, int> priorityQueue = new PriorityQueue<ProcuraConstrutiva, int>();
+    public static PriorityQueue<ProcuraConstrutiva, int> priorityQueue = new PriorityQueue<ProcuraConstrutiva, int>();
 
     // Em termos de definição, o DFS usa uma pilha (stack) para correr o seu algoritmo de recursão. Como Stack tem uma função de Pop (retira o ultimo elemento da pilha), usamos este em vez de lista
-    public Stack<ProcuraConstrutiva> stack = new Stack<ProcuraConstrutiva>();
+    public static Stack<ProcuraConstrutiva> stack = new Stack<ProcuraConstrutiva>();
 #endregion
 
 #region Algorithms
@@ -54,11 +55,6 @@ class ProcuraConstrutiva {
         while(queue.Count() > 0){
             if(time) 
             {
-                if(results.Count() != 0) 
-                {
-                    DebugResultado();
-                    return results.Distinct().ToList<int>().Last();
-                }
                 DebugResultado();
                 return -1;
             }
@@ -69,7 +65,7 @@ class ProcuraConstrutiva {
                     currentNode.Debug();
                     Console.WriteLine("expansoes: {0} geracoes: {1}", expansoes, geracoes);
                     DebugResultado();
-                    return results.Distinct().ToList<int>().Last();
+                    return currentNode.GetResult();
                 }
                 else
                 {
@@ -87,10 +83,6 @@ class ProcuraConstrutiva {
                 }
             }
         }
-        if(results.Count() != 0) {
-            DebugResultado();
-            return results.Distinct().ToList<int>().Last();
-        }
         DebugResultado();
         return -1;
     }
@@ -101,10 +93,6 @@ class ProcuraConstrutiva {
         {
             if(time) 
                 {
-                    if(results.Count() != 0){
-                        DebugResultado();
-                        return results.Distinct().ToList<int>().Last();
-                    }
                     DebugResultado();
                     return -1;
                 }
@@ -114,7 +102,7 @@ class ProcuraConstrutiva {
             {
                 currentNode.Debug();
                 DebugResultado();
-                return results.Distinct().ToList<int>().Last();
+                return currentNode.GetResult();
             }
             else{
                 // Verifica se o node não foi marcado como visitado
@@ -133,13 +121,9 @@ class ProcuraConstrutiva {
                     }
                     int result = ProfundidadePrimeiro(stack, visitados);
                     if(result > 0)
-                        return currentNode.GetResult();
+                        return result;
                 }
             }
-        }
-        if(results.Count() != 0) {
-            DebugResultado();
-            return results.Distinct().ToList<int>().Last();
         }
         DebugResultado();
         return -1; // nao encontrou solução
@@ -151,11 +135,6 @@ class ProcuraConstrutiva {
         while (priorityQueue.Count > 0) {
             if(time) 
             {
-                if(results.Count() != 0) 
-                {
-                    DebugResultado();
-                    return results.Distinct().ToList<int>().Last();
-                }
                 DebugResultado();
                 return -1;
             }
@@ -166,7 +145,7 @@ class ProcuraConstrutiva {
                     currentNode.Debug();
                     Console.WriteLine("Expansoes: {0} Geracoes: {1}", expansoes, geracoes);
                     DebugResultado();
-                    return results.Distinct().ToList<int>().Last();
+                    return currentNode.GetResult();
                 }
                 else
                 {
@@ -183,10 +162,6 @@ class ProcuraConstrutiva {
                 }
             }
         }
-        if(results.Count() != 0) {
-            DebugResultado();
-            return results.Distinct().ToList<int>().Last();
-        }
         DebugResultado();
         return -1;
     }
@@ -199,11 +174,6 @@ class ProcuraConstrutiva {
         {
             if(time) 
             {
-                if(results.Count() != 0) 
-                {
-                    DebugResultado();
-                    return results.Distinct().ToList<int>().Last();
-                }
                 DebugResultado();
                 return -1;
             }
@@ -215,7 +185,7 @@ class ProcuraConstrutiva {
                     currentNode.Debug();
                     Console.WriteLine("Expansoes: {0} Geracoes: {1}", expansoes, geracoes);
                     DebugResultado();
-                    return allNodesBoardPieces.Max();
+                    return currentNode.GetResult();
                 }
                 else
                 {
@@ -232,14 +202,10 @@ class ProcuraConstrutiva {
                         }
                 }
         }
-
-        if(results.Count() != 0) {
-            DebugResultado();
-            return results.Distinct().ToList<int>().Last();
-        }
-        DebugResultado();
+        DebugResultado(); 
         return -1;
     }
+
     public int Sofrega (PriorityQueue<ProcuraConstrutiva, int> priorityQueue, List<ProcuraConstrutiva> visitados)
     {
         visitados = new List<ProcuraConstrutiva>();
@@ -248,48 +214,129 @@ class ProcuraConstrutiva {
         {
             if(time) 
             {
-                if(results.Count() != 0) 
+                DebugResultado();
+                return -1;
+            }
+
+            ProcuraConstrutiva currentNode = priorityQueue.Dequeue();
+            if(currentNode.SolucaoCompleta())
+            {
+                currentNode.Debug();
+                Console.WriteLine("Expansoes: {0} Geracoes: {1}", expansoes, geracoes);
+                DebugResultado();
+                return currentNode.GetResult();
+            }
+            else
+            {
+                List<ProcuraConstrutiva> sucessores = new List<ProcuraConstrutiva>();
+
+                sucessores = currentNode.Sucessores(sucessores);
+                visitados.Add(currentNode);
+                if(debug > 0) currentNode.Debug();
+
+                foreach (ProcuraConstrutiva sucessor in sucessores)
                 {
+                    priorityQueue.Enqueue(sucessor, Math.Max(currentNode.Heuristica(), sucessor.Heuristica()));
+                }
+            }
+
+        }
+
+        DebugResultado();
+        return -1;
+    }
+
+    public int MelhorPrimeiro(int nivel)
+    {
+        if(time) 
+            {
+                if(results.Count() != 0){
                     DebugResultado();
                     return results.Distinct().ToList<int>().Last();
                 }
                 DebugResultado();
                 return -1;
             }
-
-            ProcuraConstrutiva currentNode = priorityQueue.Dequeue();
-            if(!currentNode.IsDuplicate(currentNode, visitados))
+            ProcuraConstrutiva currentNode = stack.Pop();
+            // Verifica se o node atual tem a solução
+            if(currentNode.SolucaoCompleta())
             {
-                if(currentNode.SolucaoCompleta())
+                currentNode.Debug();
+                DebugResultado();
+                return currentNode.GetResult();
+            }
+            if(nivel<0 || nivel>1){
+                // Verifica se o node não foi marcado como visitado
+                // Se não, então percorre o algoritmo e adiciona os filhos ao stack
+                // se foi visitado, então vai descartar esse node e vai ao seguinte no stack
+
+                List<ProcuraConstrutiva> nodes = new List<ProcuraConstrutiva>();
+                nodes = currentNode.Sucessores(nodes);
+                visitados.Add(currentNode);
+                
+                if(debug > 0) currentNode.Debug();
+                
+                
+                foreach (var node in nodes)
                 {
-                    currentNode.Debug();
-                    Console.WriteLine("Expansoes: {0} Geracoes: {1}", expansoes, geracoes);
-                    DebugResultado();
-                    return allNodesBoardPieces.Max();
+                    node.heuristica = node.Heuristica();
                 }
-                else
+                nodes.OrderBy(s => s.heuristica);
+                foreach (ProcuraConstrutiva sucessor in nodes)
                 {
-                    List<ProcuraConstrutiva> sucessores = new List<ProcuraConstrutiva>();
-
-                    sucessores = currentNode.Sucessores(sucessores);
-                    visitados.Add(currentNode);
-                    if(debug > 0) currentNode.Debug();
-
-                    foreach (ProcuraConstrutiva sucessor in sucessores)
-                    {
-                        priorityQueue.Enqueue(sucessor, sucessor.Heuristica());
+                    stack.Push(sucessor);
+                    if(avaliacoes <= limiteAvaliações || limiteAvaliações == 0){
+                        int resultado = sucessor.MelhorPrimeiro(nivel - 1);
+                        if(resultado >= 0){
+                            if(debug>1)
+                                Console.WriteLine(" ({0}) ",resultado);
+                            sucessor.Debug();
+                            sucessor.DebugResultado();
+                            return resultado;
+                        }
                     }
                 }
             }
-        }
-
-        if(results.Count() != 0) {
-            DebugResultado();
-            return results.Distinct().ToList<int>().Last();
-        }
-        DebugResultado();
-        return -1;
+        return -1; // nao encontrou solução
     }
+
+public int BestFirst (int nivel) {
+	if(SolucaoCompleta()) { // um no objectivo!
+		Debug();
+        DebugResultado();
+        return GetResult();
+	}
+	if(nivel<0 || nivel>1) { // continuar a procura
+		// ainda nao e o no objectivo
+		List<ProcuraConstrutiva> sucessores = new List<ProcuraConstrutiva>();
+		List<int> custo = new List<int>();
+		List<int> id = new List<int>();
+		sucessores = Sucessores(sucessores);
+		// calcular as heuristicas
+		
+        List<int> heuristicas = new List<int>();
+        foreach(var sucessor in sucessores)
+            heuristicas.Add(sucessor.Heuristica());
+        heuristicas.Remove(-1);
+        sucessores.Remove(null);
+        custo.Remove(-1);
+        heuristicas.OrderByDescending(o => o);
+		
+		// tentar todo os sucessores, um de cada vez
+        foreach (var sucessor in sucessores){
+			int resultado=sucessor.BestFirst(nivel-1);
+			if(resultado>=0) { // este sucessor resolveu o problema, devolver
+				sucessor.Debug();
+                sucessor.DebugResultado();
+                return resultado;
+			}
+		}
+        sucessores.Clear();
+	}
+	// percorreram-se todos os sucessores e nada (ou atingiu-se o limite), devolver -1
+	return -1;
+    }
+
 #endregion
 
 #region Utils
@@ -377,6 +424,10 @@ class ProcuraConstrutiva {
         Console.WriteLine("Time Elapsed: {0}s", Math.Abs(currentTimer.TotalSeconds));
         if(currentTimer.TotalMilliseconds > TIMER_LIMIT)
             time = true;
+    }
+    public static void DebugTimer() {
+        TimeSpan currentTimer = DateTime.Now - timerStart;
+        Console.WriteLine("Time Elapsed: {0}s", Math.Abs(currentTimer.TotalSeconds));
     }
 #endregion
 
