@@ -72,6 +72,7 @@ class Torres : ProcuraConstrutiva {
                             //Se esta foi a ultima casa livre, entao re-adicionamos este node aos sucessores para reavaliar
                             if(SolucaoCompleta())
                                 {
+                                    AddResult(Board.Count());
                                     sucessores.Add(this);
                                     return sucessores;
                                 }
@@ -104,21 +105,7 @@ class Torres : ProcuraConstrutiva {
                 }
                 currentTower = currentTower.Next();
             }
-
-            // If we cant place any tower in this position, remove it from the AvailableSpaces
-            /*  if(canNotPlaceCount >= 3)
-            {
-                AvailableSpaces.Remove(pos);
-                if(SolucaoCompleta()) // se true temos de re-adicionar o sucessor pois este é uma solução completa
-                { 
-                    sucessores.Add(this);
-                    base.AddResult(Board.Count());
-                }
-            } */
         }
-
-       /*  if(SolucaoCompleta())
-            AddResult(Board.Count()); */
         DebugAvailableSpaces.Add(AvailableSpaces.Count());
         base.Sucessores(sucessores);
         return sucessores;
@@ -164,8 +151,8 @@ class Torres : ProcuraConstrutiva {
                     if(!CheckBoundaries(board, tower, boardPos, boardSize, 1)) return false;
                 }
                     aTowerCheck += (board.FindAll(fa => fa.posicao == boardPos && fa.cor == Towers.A).Count());
-                    bTowerCheck += (board.FindAll(fa => fa.posicao == boardPos && fa.cor == Towers.A).Count());
-                    cTowerCheck += (board.FindAll(fa => fa.posicao == boardPos && fa.cor == Towers.A).Count());
+                    bTowerCheck += (board.FindAll(fa => fa.posicao == boardPos && fa.cor == Towers.B).Count());
+                    cTowerCheck += (board.FindAll(fa => fa.posicao == boardPos && fa.cor == Towers.C).Count());
                 if(
                     aTowerCheck > 1 ||
                     bTowerCheck > 1 || 
@@ -193,8 +180,8 @@ class Torres : ProcuraConstrutiva {
                     if(!CheckBoundaries(board, tower, boardPos, boardSize, 1)) return false;
                 }
                     aTowerCheck += (board.FindAll(fa => fa.posicao == boardPos && fa.cor == Towers.A).Count());
-                    bTowerCheck += (board.FindAll(fa => fa.posicao == boardPos && fa.cor == Towers.A).Count());
-                    cTowerCheck += (board.FindAll(fa => fa.posicao == boardPos && fa.cor == Towers.A).Count());
+                    bTowerCheck += (board.FindAll(fa => fa.posicao == boardPos && fa.cor == Towers.B).Count());
+                    cTowerCheck += (board.FindAll(fa => fa.posicao == boardPos && fa.cor == Towers.C).Count());
                 if(
                     aTowerCheck > 1 ||
                     bTowerCheck > 1 || 

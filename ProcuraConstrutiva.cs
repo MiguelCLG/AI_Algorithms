@@ -250,10 +250,6 @@ class ProcuraConstrutiva {
     {
         if(time) 
             {
-                if(results.Count() != 0){
-                    DebugResultado();
-                    return results.Distinct().ToList<int>().Last();
-                }
                 DebugResultado();
                 return -1;
             }
@@ -288,10 +284,6 @@ class ProcuraConstrutiva {
                     if(avaliacoes <= limiteAvaliações || limiteAvaliações == 0){
                         int resultado = sucessor.MelhorPrimeiro(nivel - 1);
                         if(resultado >= 0){
-                            if(debug>1)
-                                Console.WriteLine(" ({0}) ",resultado);
-                            sucessor.Debug();
-                            sucessor.DebugResultado();
                             return resultado;
                         }
                     }
