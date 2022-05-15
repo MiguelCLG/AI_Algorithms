@@ -253,9 +253,8 @@ class ProcuraConstrutiva {
 
     public int MelhorPrimeiro(int nivel)
     {
-        if(time) 
+            if(time) 
             {
-                DebugResultado();
                 return -1;
             }
             ProcuraConstrutiva currentNode = stack.Pop();
@@ -263,7 +262,7 @@ class ProcuraConstrutiva {
             if(currentNode.SolucaoCompleta())
             {
                 currentNode.Debug();
-                DebugResultado();
+                if (nivel == limiteNivel) DebugResultado();
                 return currentNode.GetResult();
             }
             if(nivel<0 || nivel>1){
@@ -295,6 +294,8 @@ class ProcuraConstrutiva {
                     }
                 }   
             }
+        if (nivel == limiteNivel) 
+                DebugResultado();
         return -1; // nao encontrou solução
     }
 
@@ -387,6 +388,7 @@ class ProcuraConstrutiva {
         Console.WriteLine("Time Elapsed: {0}s", Math.Abs(currentTimer.TotalSeconds));
         if(currentTimer.TotalMilliseconds > TIMER_LIMIT)
             time = true;
+            
     }
     public static void DebugTimer() {
         TimeSpan currentTimer = DateTime.Now - timerStart;
