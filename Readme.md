@@ -1,5 +1,8 @@
 # Classes
 
+## Objetivo
+Criar um programa que tenha diversos tipos de algoritmos de inteligencia artificial e testar com o problema das 8 damas (raínhas).
+
 ## Procura Construtiva
 
 ### Data Structure
